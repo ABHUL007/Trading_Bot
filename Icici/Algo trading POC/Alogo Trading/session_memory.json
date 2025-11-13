@@ -1,0 +1,115 @@
+{
+  "session_info": {
+    "last_updated": "2025-10-24",
+    "project_name": "ICICI Breeze Algo Trading Dashboard with ML",
+    "current_phase": "WebSocket Live Dashboard Implementation with ML Integration"
+  },
+  "progress": {
+    "completed_tasks": [
+      "Created ICICI Breeze broker with WebSocket support",
+      "Built static resistance/support dashboard", 
+      "Added environment variable integration",
+      "Implemented historical data fetching methods",
+      "Added intraday level identification algorithms",
+      "Created ML models for cross-timeframe breakout analysis",
+      "Built support breakdown probability models",
+      "Developed comprehensive technical analysis pipeline"
+    ],
+    "current_task": "Building Flask server to integrate dashboard with broker and ML models",
+    "next_tasks": [
+      "Create Flask/FastAPI server with WebSocket support",
+      "Integrate ML models with real-time predictions",
+      "Add live dashboard updates with ML insights",
+      "Implement real-time level crossing alerts"
+    ]
+  },
+  "configuration": {
+    "session_token": "53448258",
+    "broker": "ICICI Breeze",
+    "symbols": ["NIFTY"],
+    "timeframes": ["5minute", "15minute", "1hour", "1day"],
+    "websocket_enabled": true,
+    "ml_models_enabled": true
+  },
+  "file_structure": {
+    "main_files": [
+      "visualize_levels_dashboard.py",
+      "src/brokers/icici_breeze_broker.py",
+      "templates/dashboard.html",
+      "analyze_cross_timeframe_moves.py",
+      "analyze_support_breakdown.py",
+      ".env"
+    ],
+    "data_files": [
+      "data/NIFTY_resistance_multi_timeframe.csv",
+      "data/NIFTY_support_multi_timeframe.csv", 
+      "data/NIFTY_5min_20221024_20251023.csv",
+      "data/NIFTY_15min_20221024_20251023.csv",
+      "data/NIFTY_1hour_20221024_20251023.csv",
+      "data/NIFTY_1day_20221024_20251023.csv"
+    ],
+    "ml_output_files": [
+      "data/NIFTY_15m_cross_1h_resistance.csv",
+      "data/NIFTY_15m_cross_1d_resistance.csv", 
+      "data/NIFTY_15m_cross_1h_support.csv",
+      "data/NIFTY_15m_cross_1d_support.csv"
+    ]
+  },
+  "ml_capabilities": {
+    "cross_timeframe_analysis": {
+      "models": ["RandomForestRegressor", "GradientBoostingRegressor"],
+      "features": ["distance_from_level", "candle_body", "upper_wick", "volume"],
+      "predictions": ["peak_gain", "peak_drop", "hit_probabilities", "time_to_targets"]
+    },
+    "support_breakdown_analysis": {
+      "models": ["RandomForestClassifier", "GradientBoostingClassifier"],
+      "features": ["rsi", "volume_ratio", "volatility", "momentum", "breakdown_distance"],
+      "predictions": ["continuation_probability", "drop_targets", "time_predictions"]
+    },
+    "technical_indicators": ["RSI", "Volume_Ratio", "Volatility", "Momentum", "Support_Strength"]
+  },
+  "key_insights": {
+    "dashboard_features": [
+      "HTML-based dashboard with beautiful dark theme UI",
+      "Real-time WebSocket integration ready", 
+      "Chart.js for advanced visualizations",
+      "Bootstrap responsive design",
+      "Socket.IO for live updates",
+      "API endpoints for orders and session management"
+    ],
+    "broker_features": [
+      "Environment variable loading", 
+      "WebSocket connection management",
+      "Historical data fetching", 
+      "Intraday level identification",
+      "Paper trading support",
+      "Order management (submit/cancel/modify)",
+      "Account and position tracking"
+    ],
+    "ml_features": [
+      "Cross-timeframe breakout probability prediction",
+      "Support breakdown continuation analysis", 
+      "Target hit probability calculations",
+      "Time-to-target predictions",
+      "Technical indicator integration",
+      "Statistical analysis (median/mode/mean moves)"
+    ]
+  },
+  "websocket_requirements": {
+    "live_data_needed": [
+      "Real-time price updates",
+      "Volume data", 
+      "Tick-by-tick data for level validation",
+      "ML prediction updates",
+      "Alert notifications"
+    ],
+    "dashboard_updates": [
+      "Auto-refresh current price",
+      "Dynamic distance calculations", 
+      "Live level strength updates",
+      "Real-time ML prediction alerts",
+      "Breakout/breakdown probability updates",
+      "Target hit probability indicators"
+    ]
+  }
+}

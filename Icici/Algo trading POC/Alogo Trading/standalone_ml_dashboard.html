@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NIFTY Live Dashboard - ML Resistance & Support</title>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f1419 0%, #1a202c 100%);
+            color: #e7e9ea;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .live-price {
+            font-size: 4rem;
+            font-weight: bold;
+            color: white;
+            margin: 10px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .price-change {
+            font-size: 1.5rem;
+            margin: 10px 0;
+        }
+        
+        .price-up { color: #00ff88; }
+        .price-down { color: #ff4757; }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .status-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .status-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .status-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: rgba(25, 39, 52, 0.9);
+            border: 1px solid rgba(56, 68, 77, 0.5);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .card-header {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .resistance-header { color: #ff4757; }
+        .support-header { color: #00ff88; }
+        
+        .levels-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .level-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .level-item:hover {
+            background: rgba(255,255,255,0.05);
+            transform: translateX(5px);
+        }
+        
+        .level-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .level-price {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .level-details {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+        
+        .level-distance {
+            text-align: right;
+            font-weight: bold;
+        }
+        
+        .distance-positive { color: #ff4757; }
+        .distance-negative { color: #00ff88; }
+        
+        .ml-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        
+        .ml-high { background: #00ff88; color: #000; }
+        .ml-medium { background: #ffa502; color: #000; }
+        .ml-low { background: #ff4757; color: #fff; }
+        
+        .timeframe-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .tf-daily { background: #ff4757; color: white; }
+        .tf-hourly { background: #3498db; color: white; }
+        .tf-15m { background: #95a5a6; color: white; }
+        
+        .alerts-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 400px;
+        }
+        
+        .alert {
+            background: rgba(0,0,0,0.9);
+            border: 2px solid;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            backdrop-filter: blur(10px);
+            animation: slideIn 0.5s ease;
+        }
+        
+        .alert-bullish { border-color: #00ff88; }
+        .alert-bearish { border-color: #ff4757; }
+        
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .chart-container {
+            grid-column: 1 / -1;
+            height: 400px;
+            background: rgba(25, 39, 52, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .last-update {
+            text-align: center;
+            opacity: 0.6;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .live-price {
+                font-size: 2.5rem;
+            }
+            
+            .status-bar {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-chart-line"></i> NIFTY Live Dashboard - ML Analysis</h1>
+            <div class="live-price" id="currentPrice">₹--,---</div>
+            <div class="price-change" id="priceChange">
+                <span id="changeAmount">+0.00</span> 
+                (<span id="changePercent">0.00%</span>)
+                <div class="loading" id="loadingIndicator"></div>
+            </div>
+        </div>
+        
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-value" id="resistanceCount">-</div>
+                <div class="status-label">Resistance Levels</div>
+            </div>
+            <div class="status-item">
+                <div class="status-value" id="supportCount">-</div>
+                <div class="status-label">Support Levels</div>
+            </div>
+            <div class="status-item">
+                <div class="status-value" id="nearestResistance">₹--</div>
+                <div class="status-label">Nearest Resistance</div>
+            </div>
+            <div class="status-item">
+                <div class="status-value" id="nearestSupport">₹--</div>
+                <div class="status-label">Nearest Support</div>
+            </div>
+        </div>
+        
+        <!-- Main Dashboard -->
+        <div class="dashboard-grid">
+            <!-- Resistance Levels -->
+            <div class="card">
+                <div class="card-header resistance-header">
+                    <i class="fas fa-arrow-up"></i>
+                    Resistance Levels (ML Identified)
+                </div>
+                <div class="levels-container" id="resistanceLevels">
+                    <div style="text-align: center; padding: 40px; opacity: 0.6;">
+                        <div class="loading"></div>
+                        <p>Loading ML resistance analysis...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Support Levels -->
+            <div class="card">
+                <div class="card-header support-header">
+                    <i class="fas fa-arrow-down"></i>
+                    Support Levels (ML Identified)
+                </div>
+                <div class="levels-container" id="supportLevels">
+                    <div style="text-align: center; padding: 40px; opacity: 0.6;">
+                        <div class="loading"></div>
+                        <p>Loading ML support analysis...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Live Price Chart -->
+            <div class="chart-container">
+                <canvas id="priceChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="last-update" id="lastUpdate">
+            Last Updated: <span id="updateTime">--:--:--</span>
+        </div>
+    </div>
+    
+    <!-- Alerts Container -->
+    <div class="alerts-container" id="alertsContainer"></div>
+    
+    <script>
+        // Live Data Management
+        class LiveDashboard {
+            constructor() {
+                this.currentPrice = 23500.0;
+                this.priceHistory = [];
+                this.resistanceLevels = [];
+                this.supportLevels = [];
+                this.chart = null;
+                
+                this.initializeChart();
+                this.generateMLLevels();
+                this.startLiveSimulation();
+            }
+            
+            initializeChart() {
+                const ctx = document.getElementById('priceChart').getContext('2d');
+                this.chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'NIFTY 50',
+                            data: [],
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            x: { 
+                                display: false,
+                                grid: { color: 'rgba(255,255,255,0.1)' }
+                            },
+                            y: { 
+                                grid: { color: 'rgba(255,255,255,0.1)' },
+                                ticks: { color: '#e7e9ea' }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            generateMLLevels() {
+                // Generate ML-identified resistance levels
+                this.resistanceLevels = [
+                    { price: 23650, timeframe: '1d', strength: 'Very Strong', mlProbability: 85, hits: 8 },
+                    { price: 23580, timeframe: '1h', strength: 'Strong', mlProbability: 78, hits: 6 },
+                    { price: 23540, timeframe: '1h', strength: 'Moderate', mlProbability: 65, hits: 4 },
+                    { price: 23520, timeframe: '15m', strength: 'Weak', mlProbability: 52, hits: 3 },
+                    { price: 23700, timeframe: '1d', strength: 'Very Strong', mlProbability: 92, hits: 12 },
+                    { price: 23600, timeframe: '1h', strength: 'Strong', mlProbability: 71, hits: 5 }
+                ];
+                
+                // Generate ML-identified support levels
+                this.supportLevels = [
+                    { price: 23450, timeframe: '1d', strength: 'Very Strong', mlProbability: 88, hits: 9 },
+                    { price: 23480, timeframe: '1h', strength: 'Strong', mlProbability: 76, hits: 7 },
+                    { price: 23490, timeframe: '1h', strength: 'Moderate', mlProbability: 63, hits: 4 },
+                    { price: 23510, timeframe: '15m', strength: 'Weak', mlProbability: 48, hits: 2 },
+                    { price: 23400, timeframe: '1d', strength: 'Very Strong', mlProbability: 95, hits: 15 },
+                    { price: 23470, timeframe: '1h', strength: 'Strong', mlProbability: 73, hits: 6 }
+                ];
+                
+                this.updateLevelsDisplay();
+            }
+            
+            updateLevelsDisplay() {
+                this.updateResistanceLevels();
+                this.updateSupportLevels();
+                this.updateStatistics();
+            }
+            
+            updateResistanceLevels() {
+                const container = document.getElementById('resistanceLevels');
+                const sortedLevels = this.resistanceLevels
+                    .map(level => ({ ...level, distance: level.price - this.currentPrice }))
+                    .sort((a, b) => Math.abs(a.distance) - Math.abs(b.distance));
+                
+                container.innerHTML = sortedLevels.map(level => {
+                    const distanceClass = level.distance > 0 ? 'distance-positive' : 'distance-negative';
+                    const tfClass = level.timeframe === '1d' ? 'tf-daily' : 
+                                  level.timeframe === '1h' ? 'tf-hourly' : 'tf-15m';
+                    const mlClass = level.mlProbability >= 80 ? 'ml-high' :
+                                   level.mlProbability >= 60 ? 'ml-medium' : 'ml-low';
+                    
+                    return `
+                        <div class="level-item">
+                            <div class="level-info">
+                                <div class="level-price">₹${level.price.toLocaleString()}</div>
+                                <div class="level-details">
+                                    <span class="timeframe-badge ${tfClass}">${level.timeframe.toUpperCase()}</span>
+                                    ${level.strength}
+                                    <span class="ml-badge ${mlClass}">${level.mlProbability}% ML</span>
+                                </div>
+                            </div>
+                            <div class="level-distance ${distanceClass}">
+                                ${level.distance > 0 ? '+' : ''}${level.distance.toFixed(2)} pts
+                                <br><small>${((level.distance / this.currentPrice) * 100).toFixed(2)}%</small>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            updateSupportLevels() {
+                const container = document.getElementById('supportLevels');
+                const sortedLevels = this.supportLevels
+                    .map(level => ({ ...level, distance: this.currentPrice - level.price }))
+                    .sort((a, b) => Math.abs(a.distance) - Math.abs(b.distance));
+                
+                container.innerHTML = sortedLevels.map(level => {
+                    const distanceClass = level.distance > 0 ? 'distance-positive' : 'distance-negative';
+                    const tfClass = level.timeframe === '1d' ? 'tf-daily' : 
+                                  level.timeframe === '1h' ? 'tf-hourly' : 'tf-15m';
+                    const mlClass = level.mlProbability >= 80 ? 'ml-high' :
+                                   level.mlProbability >= 60 ? 'ml-medium' : 'ml-low';
+                    
+                    return `
+                        <div class="level-item">
+                            <div class="level-info">
+                                <div class="level-price">₹${level.price.toLocaleString()}</div>
+                                <div class="level-details">
+                                    <span class="timeframe-badge ${tfClass}">${level.timeframe.toUpperCase()}</span>
+                                    ${level.strength}
+                                    <span class="ml-badge ${mlClass}">${level.mlProbability}% ML</span>
+                                </div>
+                            </div>
+                            <div class="level-distance ${distanceClass}">
+                                ${level.distance > 0 ? '+' : ''}${level.distance.toFixed(2)} pts
+                                <br><small>${((level.distance / this.currentPrice) * 100).toFixed(2)}%</small>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            updateStatistics() {
+                const nearestResistance = this.resistanceLevels
+                    .filter(level => level.price > this.currentPrice)
+                    .sort((a, b) => a.price - b.price)[0];
+                
+                const nearestSupport = this.supportLevels
+                    .filter(level => level.price < this.currentPrice)
+                    .sort((a, b) => b.price - a.price)[0];
+                
+                document.getElementById('resistanceCount').textContent = this.resistanceLevels.length;
+                document.getElementById('supportCount').textContent = this.supportLevels.length;
+                document.getElementById('nearestResistance').textContent = 
+                    nearestResistance ? `₹${nearestResistance.price.toLocaleString()}` : '₹--';
+                document.getElementById('nearestSupport').textContent = 
+                    nearestSupport ? `₹${nearestSupport.price.toLocaleString()}` : '₹--';
+            }
+            
+            startLiveSimulation() {
+                let previousPrice = this.currentPrice;
+                
+                setInterval(() => {
+                    // Simulate realistic price movement
+                    const change = (Math.random() - 0.5) * 10; // ±5 points
+                    this.currentPrice += change;
+                    this.currentPrice = Math.round(this.currentPrice * 100) / 100;
+                    
+                    // Update price display
+                    document.getElementById('currentPrice').textContent = `₹${this.currentPrice.toLocaleString()}`;
+                    
+                    // Update change display
+                    const totalChange = this.currentPrice - previousPrice;
+                    const changePercent = ((totalChange / previousPrice) * 100);
+                    
+                    document.getElementById('changeAmount').textContent = 
+                        `${totalChange >= 0 ? '+' : ''}${totalChange.toFixed(2)}`;
+                    document.getElementById('changePercent').textContent = 
+                        `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
+                    
+                    const changeElement = document.getElementById('priceChange');
+                    changeElement.className = totalChange >= 0 ? 'price-change price-up' : 'price-change price-down';
+                    
+                    // Update chart
+                    const now = new Date();
+                    const timeLabel = now.toLocaleTimeString();
+                    
+                    this.chart.data.labels.push(timeLabel);
+                    this.chart.data.datasets[0].data.push(this.currentPrice);
+                    
+                    // Keep only last 50 points
+                    if (this.chart.data.labels.length > 50) {
+                        this.chart.data.labels.shift();
+                        this.chart.data.datasets[0].data.shift();
+                    }
+                    
+                    this.chart.update('none');
+                    
+                    // Check for level crosses
+                    this.checkLevelCrosses(previousPrice, this.currentPrice);
+                    
+                    // Update levels display
+                    this.updateLevelsDisplay();
+                    
+                    // Update last update time
+                    document.getElementById('updateTime').textContent = now.toLocaleTimeString();
+                    
+                    previousPrice = this.currentPrice;
+                }, 2000); // Update every 2 seconds
+            }
+            
+            checkLevelCrosses(oldPrice, newPrice) {
+                // Check resistance breakouts
+                this.resistanceLevels.forEach(level => {
+                    if (oldPrice < level.price && newPrice >= level.price) {
+                        this.showAlert('RESISTANCE_BREAKOUT', level, newPrice);
+                    }
+                });
+                
+                // Check support breakdowns
+                this.supportLevels.forEach(level => {
+                    if (oldPrice > level.price && newPrice <= level.price) {
+                        this.showAlert('SUPPORT_BREAKDOWN', level, newPrice);
+                    }
+                });
+            }
+            
+            showAlert(type, level, currentPrice) {
+                const container = document.getElementById('alertsContainer');
+                const isBullish = type === 'RESISTANCE_BREAKOUT';
+                
+                const alert = document.createElement('div');
+                alert.className = `alert ${isBullish ? 'alert-bullish' : 'alert-bearish'}`;
+                alert.innerHTML = `
+                    <h5><i class="fas fa-bell"></i> ${isBullish ? 'BREAKOUT' : 'BREAKDOWN'} Alert!</h5>
+                    <strong>${type.replace('_', ' ')}</strong> at ₹${level.price.toLocaleString()}<br>
+                    Current: ₹${currentPrice.toLocaleString()}<br>
+                    ML Probability: <strong>${level.mlProbability}%</strong><br>
+                    Timeframe: <strong>${level.timeframe.toUpperCase()}</strong>
+                `;
+                
+                container.appendChild(alert);
+                
+                // Play alert sound
+                try {
+                    const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGWm98OScTgwOUKvl7bVmHAU7k9rwz3krBSh+yvHajzsKF2K36O2nWBMJSKHh8bllHgU2jdXvzXgpBSt+yO/XizcLGGS87+qdTgwOUKzl7bVmHAU7k9rwz3krBSh+yvHajzsKF2K36O2nWBMJSKHh8bllHgU2jdXvzXgpBSt+yO/XizcLGGS87+qdTgwOUKzl7bVmHAU7k9rwz3krBSh+yvHajzsKF2K36O2nWBMJSKHh8bllHgU2jdXvzXgpBSt+yO/XizcLGGS87+qdTg==');
+                    audio.play().catch(() => {}); // Ignore errors
+                } catch(e) {}
+                
+                // Remove alert after 10 seconds
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 10000);
+                
+                console.log(`🚨 ${type}: Price ${currentPrice} crossed ${level.price} (${level.mlProbability}% ML probability)`);
+            }
+        }
+        
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new LiveDashboard();
+        });
+    </script>
+</body>
+</html>

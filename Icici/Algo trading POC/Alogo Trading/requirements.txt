@@ -1,0 +1,73 @@
+# Core data manipulation and analysis
+pandas>=1.5.0
+numpy>=1.24.0
+scipy>=1.10.0
+
+# Web framework and real-time communication
+Flask>=2.3.0
+Flask-SocketIO>=5.3.0
+python-socketio>=5.8.0
+python-engineio>=4.7.0
+
+# ICICI Direct Breeze API
+breeze-connect>=1.0.64
+
+# Financial data and analysis
+yfinance>=0.2.10
+pandas-datareader>=0.10.0
+quandl>=3.7.0
+alpha-vantage>=2.3.1
+
+# Technical analysis
+ta-lib>=0.4.25
+pandas-ta>=0.3.14b0
+
+# Backtesting frameworks
+zipline-reloaded>=2.2.0
+backtrader>=1.9.78.123
+vectorbt>=0.25.0
+
+# Machine learning
+scikit-learn>=1.2.0
+tensorflow>=2.11.0
+keras>=2.11.0
+
+# Broker APIs
+alpaca-trade-api>=3.0.0
+ib-insync>=0.9.70
+ccxt>=3.0.0
+
+# Database and storage
+sqlalchemy>=1.4.46
+psycopg2-binary>=2.9.5
+redis>=4.5.1
+
+# Async and networking
+aiohttp>=3.8.0
+websockets>=10.4
+requests>=2.28.0
+
+# Plotting and visualization
+matplotlib>=3.6.0
+plotly>=5.11.0
+seaborn>=0.11.0
+
+# Configuration and environment
+python-dotenv>=0.21.0
+pydantic>=1.10.0
+pyyaml>=6.0
+
+# Logging and monitoring
+loguru>=0.6.0
+prometheus-client>=0.15.0
+
+# Testing
+pytest>=7.2.0
+pytest-asyncio>=0.20.0
+pytest-cov>=4.0.0
+
+# Development tools
+black>=22.10.0
+flake8>=6.0.0
+mypy>=0.991
+pre-commit>=2.20.0

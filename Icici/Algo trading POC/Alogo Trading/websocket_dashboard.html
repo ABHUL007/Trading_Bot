@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NIFTY Live Trading Dashboard - WebSocket</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background-color: #0f1419;
+            color: #e7e9ea;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .card {
+            background-color: #192734;
+            border: 1px solid #38444d;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            background-color: #253341;
+            border-bottom: 2px solid #38444d;
+            font-weight: bold;
+            padding: 15px;
+        }
+        
+        .price-display {
+            font-size: 3.5rem;
+            font-weight: bold;
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        
+        .price-change {
+            font-size: 1.2rem;
+            margin-top: 10px;
+        }
+        
+        .level-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            margin: 8px 0;
+            background-color: #253341;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+        
+        .resistance-item {
+            border-left-color: #e74c3c;
+        }
+        
+        .support-item {
+            border-left-color: #27ae60;
+        }
+        
+        .level-price {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        
+        .level-distance {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .ml-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .ml-high {
+            background-color: #27ae60;
+            color: white;
+        }
+        
+        .ml-medium {
+            background-color: #f39c12;
+            color: white;
+        }
+        
+        .ml-low {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-connected {
+            background-color: #00c853;
+            box-shadow: 0 0 10px #00c853;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-disconnected {
+            background-color: #ff1744;
+            box-shadow: 0 0 10px #ff1744;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 10px #00c853; }
+            50% { box-shadow: 0 0 20px #00c853; }
+            100% { box-shadow: 0 0 10px #00c853; }
+        }
+        
+        .alert-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 400px;
+        }
+        
+        .ml-prediction {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .prediction-header {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .prediction-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+        }
+        
+        .timeframe-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        
+        .tf-daily { background-color: #e74c3c; }
+        .tf-hourly { background-color: #3498db; }
+        .tf-15m { background-color: #95a5a6; }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-chart-line"></i> NIFTY Live Trading Dashboard
+            </span>
+            <div class="d-flex align-items-center">
+                <span class="status-indicator" id="wsStatus"></span>
+                <span id="wsStatusText">Connecting...</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- Alert Container -->
+        <div id="alertContainer" class="alert-box"></div>
+        
+        <div class="row">
+            <!-- Live Price Display -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-rupee-sign"></i> Live Price
+                    </div>
+                    <div class="card-body">
+                        <div class="price-display" id="currentPrice">
+                            ₹--,---
+                            <div class="price-change" id="priceChange">--</div>
+                        </div>
+                        <div class="text-center">
+                            <small id="lastUpdate">Last Update: --</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ML Predictions -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-brain"></i> ML Predictions
+                    </div>
+                    <div class="card-body">
+                        <div id="mlPredictions">
+                            <div class="text-center">
+                                <i class="fas fa-spinner fa-spin"></i> Loading ML predictions...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Resistance Levels -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header text-danger">
+                        <i class="fas fa-arrow-up"></i> ML Resistance Levels
+                    </div>
+                    <div class="card-body">
+                        <div id="resistanceLevels">
+                            <div class="text-center">
+                                <i class="fas fa-spinner fa-spin"></i> Loading resistance levels...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Support Levels -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header text-success">
+                        <i class="fas fa-arrow-down"></i> ML Support Levels
+                    </div>
+                    <div class="card-body">
+                        <div id="supportLevels">
+                            <div class="text-center">
+                                <i class="fas fa-spinner fa-spin"></i> Loading support levels...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // WebSocket connection
+        let ws = null;
+        let currentPrice = 0;
+        let lastPrice = 0;
+        
+        // Connect to WebSocket server
+        function connectWebSocket() {
+            try {
+                ws = new WebSocket('ws://localhost:8765');
+                
+                ws.onopen = function(event) {
+                    console.log('✅ WebSocket connected');
+                    updateConnectionStatus(true);
+                };
+                
+                ws.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    handleWebSocketMessage(data);
+                };
+                
+                ws.onclose = function(event) {
+                    console.log('❌ WebSocket disconnected');
+                    updateConnectionStatus(false);
+                    // Reconnect after 3 seconds
+                    setTimeout(connectWebSocket, 3000);
+                };
+                
+                ws.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                    updateConnectionStatus(false);
+                };
+                
+            } catch (error) {
+                console.error('Failed to connect to WebSocket:', error);
+                updateConnectionStatus(false);
+                setTimeout(connectWebSocket, 3000);
+            }
+        }
+        
+        // Handle WebSocket messages
+        function handleWebSocketMessage(data) {
+            switch(data.type) {
+                case 'initial_data':
+                    handleInitialData(data.data);
+                    break;
+                case 'price_update':
+                    handlePriceUpdate(data);
+                    break;
+                case 'level_alert':
+                    handleLevelAlert(data);
+                    break;
+            }
+        }
+        
+        // Handle initial data load
+        function handleInitialData(data) {
+            currentPrice = data.current_price;
+            lastPrice = currentPrice;
+            
+            updatePriceDisplay(currentPrice, 0);
+            updateResistanceLevels(data.resistance_levels);
+            updateSupportLevels(data.support_levels);
+            updateMLPredictions(data.ml_predictions);
+        }
+        
+        // Handle price updates
+        function handlePriceUpdate(data) {
+            lastPrice = currentPrice;
+            currentPrice = data.price;
+            const change = currentPrice - lastPrice;
+            
+            updatePriceDisplay(currentPrice, change);
+            updateMLPredictions(data.ml_predictions);
+            
+            // Update level distances
+            updateLevelDistances();
+        }
+        
+        // Handle level alerts
+        function handleLevelAlert(data) {
+            showAlert(data);
+            playAlertSound();
+        }
+        
+        // Update connection status
+        function updateConnectionStatus(connected) {
+            const indicator = document.getElementById('wsStatus');
+            const text = document.getElementById('wsStatusText');
+            
+            if (connected) {
+                indicator.className = 'status-indicator status-connected';
+                text.textContent = 'Connected';
+            } else {
+                indicator.className = 'status-indicator status-disconnected';
+                text.textContent = 'Disconnected';
+            }
+        }
+        
+        // Update price display
+        function updatePriceDisplay(price, change) {
+            const priceElement = document.getElementById('currentPrice');
+            const changeElement = document.getElementById('priceChange');
+            const updateElement = document.getElementById('lastUpdate');
+            
+            priceElement.innerHTML = `₹${price.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+            
+            let changeText = '';
+            let changeClass = '';
+            if (change > 0) {
+                changeText = `+${change.toFixed(2)}`;
+                changeClass = 'text-success';
+            } else if (change < 0) {
+                changeText = change.toFixed(2);
+                changeClass = 'text-danger';
+            } else {
+                changeText = '0.00';
+                changeClass = 'text-muted';
+            }
+            
+            changeElement.innerHTML = `<span class="${changeClass}"><i class="fas fa-${change >= 0 ? 'arrow-up' : 'arrow-down'}"></i> ${changeText}</span>`;
+            updateElement.textContent = `Last Update: ${new Date().toLocaleTimeString()}`;
+        }
+        
+        // Update resistance levels
+        function updateResistanceLevels(levels) {
+            const container = document.getElementById('resistanceLevels');
+            let html = '';
+            
+            levels.forEach(level => {
+                const distance = level.level - currentPrice;
+                const mlConfidence = level.ml_confidence || 0.8;
+                const mlClass = mlConfidence > 0.85 ? 'ml-high' : mlConfidence > 0.7 ? 'ml-medium' : 'ml-low';
+                const tfClass = level.timeframe === '1d' ? 'tf-daily' : level.timeframe === '1h' ? 'tf-hourly' : 'tf-15m';
+                
+                html += `
+                    <div class="level-item resistance-item" data-level="${level.level}">
+                        <div>
+                            <div class="level-price">₹${level.level.toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
+                            <div class="level-distance">+${distance.toFixed(2)} pts (${((distance/currentPrice)*100).toFixed(2)}%)</div>
+                        </div>
+                        <div class="text-end">
+                            <span class="ml-badge ${mlClass}">ML: ${(mlConfidence*100).toFixed(0)}%</span>
+                            <span class="timeframe-badge ${tfClass}">${level.timeframe}</span>
+                            <div class="small mt-1">${level.strength}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Update support levels
+        function updateSupportLevels(levels) {
+            const container = document.getElementById('supportLevels');
+            let html = '';
+            
+            levels.forEach(level => {
+                const distance = currentPrice - level.level;
+                const mlConfidence = level.ml_confidence || 0.8;
+                const mlClass = mlConfidence > 0.85 ? 'ml-high' : mlConfidence > 0.7 ? 'ml-medium' : 'ml-low';
+                const tfClass = level.timeframe === '1d' ? 'tf-daily' : level.timeframe === '1h' ? 'tf-hourly' : 'tf-15m';
+                
+                html += `
+                    <div class="level-item support-item" data-level="${level.level}">
+                        <div>
+                            <div class="level-price">₹${level.level.toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
+                            <div class="level-distance">-${distance.toFixed(2)} pts (${((distance/currentPrice)*100).toFixed(2)}%)</div>
+                        </div>
+                        <div class="text-end">
+                            <span class="ml-badge ${mlClass}">ML: ${(mlConfidence*100).toFixed(0)}%</span>
+                            <span class="timeframe-badge ${tfClass}">${level.timeframe}</span>
+                            <div class="small mt-1">${level.strength}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Update ML predictions
+        function updateMLPredictions(predictions) {
+            const container = document.getElementById('mlPredictions');
+            
+            if (!predictions || Object.keys(predictions).length === 0) {
+                container.innerHTML = '<div class="text-center text-muted">No ML predictions available</div>';
+                return;
+            }
+            
+            let html = '';
+            
+            if (predictions.nearest_resistance) {
+                const r = predictions.nearest_resistance;
+                html += `
+                    <div class="ml-prediction">
+                        <div class="prediction-header text-danger">
+                            <i class="fas fa-arrow-up"></i> Next Resistance
+                        </div>
+                        <div class="prediction-item">
+                            <span>Level:</span>
+                            <span>₹${r.level.toLocaleString('en-IN')}</span>
+                        </div>
+                        <div class="prediction-item">
+                            <span>Hit Probability:</span>
+                            <span class="text-warning">${(predictions.breakout_probability*100).toFixed(1)}%</span>
+                        </div>
+                        <div class="prediction-item">
+                            <span>Expected Move:</span>
+                            <span class="text-success">+${predictions.expected_move.toFixed(0)} pts</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (predictions.nearest_support) {
+                const s = predictions.nearest_support;
+                html += `
+                    <div class="ml-prediction">
+                        <div class="prediction-header text-success">
+                            <i class="fas fa-arrow-down"></i> Next Support
+                        </div>
+                        <div class="prediction-item">
+                            <span>Level:</span>
+                            <span>₹${s.level.toLocaleString('en-IN')}</span>
+                        </div>
+                        <div class="prediction-item">
+                            <span>Hit Probability:</span>
+                            <span class="text-warning">${(predictions.breakdown_probability*100).toFixed(1)}%</span>
+                        </div>
+                        <div class="prediction-item">
+                            <span>Expected Move:</span>
+                            <span class="text-danger">${predictions.expected_move.toFixed(0)} pts</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        // Update level distances when price changes
+        function updateLevelDistances() {
+            // Update resistance distances
+            document.querySelectorAll('.resistance-item').forEach(item => {
+                const level = parseFloat(item.dataset.level);
+                const distance = level - currentPrice;
+                const distanceElement = item.querySelector('.level-distance');
+                distanceElement.textContent = `+${distance.toFixed(2)} pts (${((distance/currentPrice)*100).toFixed(2)}%)`;
+            });
+            
+            // Update support distances
+            document.querySelectorAll('.support-item').forEach(item => {
+                const level = parseFloat(item.dataset.level);
+                const distance = currentPrice - level;
+                const distanceElement = item.querySelector('.level-distance');
+                distanceElement.textContent = `-${distance.toFixed(2)} pts (${((distance/currentPrice)*100).toFixed(2)}%)`;
+            });
+        }
+        
+        // Show alert
+        function showAlert(data) {
+            const alertHtml = `
+                <div class="alert alert-${data.alert_type.includes('RESISTANCE') ? 'danger' : 'success'} alert-dismissible fade show">
+                    <h5><i class="fas fa-bell"></i> ${data.alert_type.replace('_', ' ')}</h5>
+                    <strong>Level:</strong> ₹${data.level.toLocaleString('en-IN')}<br>
+                    <strong>Current:</strong> ₹${data.current_price.toLocaleString('en-IN')}<br>
+                    <strong>ML Confidence:</strong> ${(data.ml_confidence*100).toFixed(0)}%<br>
+                    <strong>Distance:</strong> ${Math.abs(data.distance).toFixed(2)} pts
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            document.getElementById('alertContainer').innerHTML = alertHtml;
+            
+            // Auto-remove after 8 seconds
+            setTimeout(() => {
+                const alert = document.querySelector('#alertContainer .alert');
+                if (alert) {
+                    alert.classList.remove('show');
+                    setTimeout(() => alert.remove(), 300);
+                }
+            }, 8000);
+        }
+        
+        // Play alert sound
+        function playAlertSound() {
+            try {
+                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGWm98OScTgwOUKvl7bVmHAU7k9rwz3krBSh+yvHajzsKF2K36O2nWBMJSKHh8bllHgU2jdXvzXgpBSt+yO/XizcLGGS87+qdTgwOUKzl7bVmHAU7k9rwz3krBSh+yvHajzsKF2K36O2nWBMJSKHh8bllHgU2jdXvzXgpBSt+yO/XizcLGGS87+qdTgwOUKzl7bVmHAU7k9rwz3krBSh+yvHajzsKF2K36O2nWBMJSKHh8bllHgU2jdXvzXgpBSt+yO/XizcLGGS87+qdTg==');
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            } catch (e) {
+                console.log('Audio not supported:', e);
+            }
+        }
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            connectWebSocket();
+        });
+    </script>
+</body>
+</html>

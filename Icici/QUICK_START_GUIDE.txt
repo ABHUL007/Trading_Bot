@@ -1,0 +1,162 @@
+════════════════════════════════════════════════════════════════
+   🚀 ICICI ALGO TRADING - QUICK START GUIDE
+════════════════════════════════════════════════════════════════
+
+📁 YOUR ORGANIZED WORKSPACE
+────────────────────────────────────────────────────────────────
+
+d:\Algo Trading\Icici\
+│
+├── 🤖 Trading_System/              ← REAL TRADING BOT
+│   │
+│   ├── 📊 Data Collection
+│   │   └── websocket_data_collector.py
+│   │
+│   ├── 🎯 Signal Detection
+│   │   └── super_pranni_monitor.py
+│   │
+│   ├── 💰 Trading Execution
+│   │   ├── real_trader.py (Main bot)
+│   │   └── emergency_exit.py (Manual exit)
+│   │
+│   └── 🚀 LAUNCHERS
+│       ├── START_TRADING_SYSTEM.bat ⭐ (DOUBLE-CLICK HERE!)
+│       └── start_trading_system.py
+│
+├── 💼 Khusi_Investment_Model/      ← INVESTMENT ANALYSIS
+│   │
+│   ├── Khusi_Invest_Model.py
+│   ├── enhanced_khusi_10year.py
+│   └── Model files (*.pkl)
+│
+└── 📂 Databases & Config
+    ├── NIFTY_5min_data.db (Live candles)
+    ├── NIFTY_15min_data.db (Signals)
+    ├── paper_trades.db (Trade records)
+    └── .env (Configuration)
+
+════════════════════════════════════════════════════════════════
+   🎯 HOW TO START
+════════════════════════════════════════════════════════════════
+
+OPTION 1: Main Launcher (Easiest)
+──────────────────────────────────
+📍 Double-click: START_MAIN.bat (in root folder)
+   
+   Choose:
+   1 → Start Trading System
+   2 → Start Khusi Investment Model
+   3 → Exit
+
+OPTION 2: Direct Trading
+──────────────────────────────────
+📍 Navigate to: Trading_System\
+📍 Double-click: START_TRADING_SYSTEM.bat
+   
+   This starts BOTH:
+   ✅ Websocket Data Collector
+   ✅ Real Trading Bot
+
+OPTION 3: Emergency Exit
+──────────────────────────────────
+If you need to close ALL positions manually:
+
+📍 Navigate to: Trading_System\
+📍 Run: emergency_exit.py
+   
+   PowerShell:
+   conda run -p "..\..\.conda" python emergency_exit.py
+
+════════════════════════════════════════════════════════════════
+   ⚙️ CONFIGURATION
+════════════════════════════════════════════════════════════════
+
+📝 Edit: .env (in root folder)
+
+IMPORTANT SETTINGS:
+───────────────────
+PAPER_TRADING=true   ← Set to 'false' for LIVE TRADING
+                     ← Keep 'true' for TESTING
+
+ICICI_API_KEY=xxxxx
+ICICI_API_SECRET=xxxxx
+ICICI_SESSION_TOKEN=xxxxx  ← Update daily!
+
+════════════════════════════════════════════════════════════════
+   📊 TRADING SYSTEM FEATURES
+════════════════════════════════════════════════════════════════
+
+✅ Real-time NIFTY data via WebSocket
+✅ Super Pranni breakout signals (15-min)
+✅ Auto order placement (75 qty / 1 lot)
+✅ ₹10 target (immediate exit)
+✅ Level-based stop-loss (2 consecutive 5-min candles)
+✅ API rate limiting (95 calls/minute)
+✅ Auto-restart on crash
+✅ Complete audit trail
+
+════════════════════════════════════════════════════════════════
+   📝 LOGS & MONITORING
+════════════════════════════════════════════════════════════════
+
+Trading System Logs:
+├── trading_system.log              (Launcher logs)
+├── websocket_data_collector.log    (Data collection)
+└── real_trader.log                 (Trading bot)
+
+All logs in: Trading_System\ folder
+
+════════════════════════════════════════════════════════════════
+   🔄 SYSTEM FLOW
+════════════════════════════════════════════════════════════════
+
+1. START_TRADING_SYSTEM.bat (You click)
+        ↓
+2. Websocket Collector starts → Populates databases
+        ↓
+3. Real Trader starts → Reads databases
+        ↓
+4. Super Pranni detects breakout signal
+        ↓
+5. Place order via Breeze API (75 qty)
+        ↓
+6. Monitor position every 15 seconds
+        ↓
+7. Exit when:
+   - ₹10 target hit (immediate)
+   - 2 consecutive 5-min candles violate level
+        ↓
+8. Square off via Breeze API
+        ↓
+9. Record trade in database
+
+════════════════════════════════════════════════════════════════
+   ⚠️ SAFETY CHECKLIST
+════════════════════════════════════════════════════════════════
+
+Before LIVE TRADING:
+────────────────────
+□ Test in PAPER_TRADING mode first
+□ Verify websocket data is updating
+□ Confirm signals are detected
+□ Check emergency_exit.py works
+□ Update session_token in .env (daily!)
+□ Set PAPER_TRADING=false in .env
+□ Have sufficient margin in account
+
+════════════════════════════════════════════════════════════════
+   📞 NEED HELP?
+════════════════════════════════════════════════════════════════
+
+1. Check logs first (*.log files)
+2. Run emergency_exit.py if needed
+3. Review README.md in each folder
+4. All old files preserved in archive/
+
+════════════════════════════════════════════════════════════════
+   ✅ READY TO GO!
+════════════════════════════════════════════════════════════════
+
+👉 Start here: START_MAIN.bat (in root folder)
+
+Good luck with your trading! 🚀📈

@@ -1,0 +1,156 @@
+# ICICI Breeze Trading Configuration
+
+# Broker Configuration
+broker:
+  name: icici_breeze
+  paper_trading: true  # Set to false for live trading
+  
+  # API Credentials (Use environment variables for security)
+  # Get these from ICICI Direct API portal
+  api_key: "${ICICI_API_KEY}"
+  api_secret: "${ICICI_API_SECRET}"
+  session_token: "${ICICI_SESSION_TOKEN}"
+  
+  # Rate limiting
+  requests_per_minute: 100
+  requests_per_day: 5000
+  
+  # Connection settings
+  timeout: 30
+  retry_attempts: 3
+
+# Data Configuration
+data:
+  provider: icici_breeze
+  historical_data_source: icici_breeze
+  
+  # Market data settings
+  real_time_data: true
+  historical_data_interval: "1minute"
+  
+  # Symbols to track
+  default_symbols:
+    - "NSE.NIFTY"
+    - "NSE.BANKNIFTY" 
+    - "NSE.RELIANCE"
+    - "NSE.TCS"
+    - "NSE.HDFCBANK"
+
+# Risk Management
+risk:
+  max_position_size: 100000      # Maximum position size in INR
+  max_daily_loss: 10000          # Maximum daily loss limit in INR
+  max_open_positions: 10         # Maximum number of open positions
+  position_size_percent: 0.02    # Position size as % of portfolio
+  
+  # Stop loss settings
+  default_stop_loss: 0.02        # 2% stop loss
+  trailing_stop_loss: true
+  
+  # Risk checks
+  pre_trade_risk_check: true
+  real_time_risk_monitoring: true
+
+# Strategy Configuration
+strategies:
+  default_strategy: moving_average
+  
+  # Strategy parameters
+  strategy_params:
+    moving_average:
+      short_window: 20
+      long_window: 50
+      symbols:
+        - "NSE.NIFTY"
+        - "NSE.BANKNIFTY"
+      
+    mean_reversion:
+      lookback_period: 14
+      z_score_threshold: 2.0
+      symbols:
+        - "NSE.RELIANCE"
+        - "NSE.TCS"
+
+# Logging Configuration
+logging:
+  level: INFO                    # DEBUG, INFO, WARNING, ERROR
+  file: logs/icici_trading.log
+  max_file_size: 10485760       # 10MB
+  backup_count: 5
+  
+  # Console logging
+  console_logging: true
+  console_level: INFO
+  
+  # Log formats
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  date_format: "%Y-%m-%d %H:%M:%S"
+
+# Portfolio Management
+portfolio:
+  initial_capital: 1000000      # 10 Lakh INR
+  currency: INR
+  
+  # Position sizing
+  position_sizing_method: "percent_risk"  # fixed, percent_portfolio, percent_risk
+  risk_per_trade: 0.01          # 1% risk per trade
+  
+  # Margin settings
+  margin_utilization_limit: 0.8  # 80% margin utilization limit
+
+# Notification Settings
+notifications:
+  enabled: true
+  
+  # Email notifications
+  email:
+    enabled: false
+    smtp_server: ""
+    smtp_port: 587
+    username: ""
+    password: ""
+    to_addresses: []
+  
+  # Webhook notifications
+  webhook:
+    enabled: false
+    url: ""
+    
+  # Console notifications
+  console:
+    enabled: true
+    level: INFO
+
+# Database Configuration (Optional)
+database:
+  enabled: false
+  type: sqlite                  # sqlite, postgresql, mysql
+  host: localhost
+  port: 5432
+  name: trading_db
+  username: ""
+  password: ""
+  
+# Backtesting Configuration
+backtesting:
+  start_date: "2023-01-01"
+  end_date: "2023-12-31"
+  initial_capital: 1000000
+  
+  # Transaction costs
+  commission_per_trade: 20      # INR per trade
+  slippage: 0.001              # 0.1% slippage
+  
+  # Market impact
+  market_impact: 0.0005        # 0.05% market impact
+
+# Development Settings
+development:
+  debug_mode: false
+  simulation_speed: 1.0         # Speed multiplier for simulation
+  
+  # Paper trading settings
+  paper_trading:
+    fill_delay: 1               # Seconds delay for order fills
+    slippage_simulation: true
+    commission_simulation: true

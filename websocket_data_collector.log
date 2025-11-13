@@ -1,0 +1,71 @@
+2025-11-12 06:56:24,271 - INFO - ✅ NiftyDataCollector initialized
+2025-11-12 06:56:26,830 - INFO - ✅ Connected to ICICI Breeze API
+2025-11-12 06:56:27,236 - INFO - ✅ Database ready: NIFTY_1min_data.db (data_1min)
+2025-11-12 06:56:27,382 - INFO - ✅ Database ready: NIFTY_5min_data.db (data_5min)
+2025-11-12 06:56:27,561 - INFO - ✅ Database ready: NIFTY_15min_data.db (data_15min)
+2025-11-12 06:56:27,714 - INFO - ✅ Database ready: NIFTY_1hour_data.db (data_1hour)
+2025-11-12 06:56:27,913 - INFO - ✅ Database ready: NIFTY_1day_data.db (data_1day)
+2025-11-12 06:56:27,913 - INFO - 
+================================================================================
+2025-11-12 06:56:27,913 - INFO - 📥 DOWNLOADING HISTORICAL DATA FOR 2025-11-11
+2025-11-12 06:56:27,913 - INFO - ================================================================================
+
+2025-11-12 06:56:27,913 - INFO - 📊 Step 1: Downloading 1-minute data...
+2025-11-12 06:56:27,913 - INFO - 📥 Downloading 1minute data for 2025-11-11...
+2025-11-12 06:56:28,430 - INFO - ✅ Downloaded 375 1minute candles for 2025-11-11
+2025-11-12 06:56:28,890 - INFO - ✅ Saved 375 rows to NIFTY_1min_data.db
+2025-11-12 06:56:28,890 - INFO - 
+📊 Step 2: Aggregating 1-min → Daily...
+2025-11-12 06:56:28,936 - INFO - ✅ Aggregated 375 1-min candles → 1 daily candle
+2025-11-12 06:56:28,940 - INFO - ✅ Saved to NIFTY_1day_data.db: 0 new, 0 updated, 1 skipped (outside market hours)
+2025-11-12 06:56:28,940 - INFO - 
+📊 Step 3: Downloading 5-minute data...
+2025-11-12 06:56:28,940 - INFO - 📥 Downloading 5minute data for 2025-11-11...
+2025-11-12 06:56:29,296 - INFO - ✅ Downloaded 75 5minute candles for 2025-11-11
+2025-11-12 06:56:29,509 - INFO - ✅ Saved 75 rows to NIFTY_5min_data.db
+2025-11-12 06:56:29,509 - INFO - 
+📊 Step 4: Aggregating 5-min → 15-min...
+2025-11-12 06:56:29,680 - INFO - ✅ Aggregated 75 → 25 (5min → 15min)
+2025-11-12 06:56:29,785 - INFO - ✅ Saved 25 rows to NIFTY_15min_data.db
+2025-11-12 06:56:29,785 - INFO - 
+📊 Step 5: Aggregating 15-min → 1-hour...
+2025-11-12 06:56:29,804 - INFO - ✅ Aggregated 25 → 7 (15min → 1hour)
+2025-11-12 06:56:29,880 - INFO - ✅ Saved to NIFTY_1hour_data.db: 6 new, 0 updated, 1 skipped (outside market hours)
+2025-11-12 06:56:29,880 - INFO - 
+================================================================================
+2025-11-12 06:56:29,880 - INFO - ✅ HISTORICAL DATA DOWNLOAD COMPLETE
+2025-11-12 06:56:29,880 - INFO - ================================================================================
+
+2025-11-12 07:02:32,285 - INFO - ✅ NiftyDataCollector initialized
+2025-11-12 07:02:33,978 - INFO - ✅ Connected to ICICI Breeze API
+2025-11-12 07:02:33,978 - INFO - 
+================================================================================
+2025-11-12 07:02:33,978 - INFO - 📥 DOWNLOADING HISTORICAL DATA FOR 2025-11-11
+2025-11-12 07:02:33,978 - INFO - ================================================================================
+
+2025-11-12 07:02:33,978 - INFO - 📊 Step 1: Downloading 1-minute data...
+2025-11-12 07:02:33,978 - INFO - 📥 Downloading 1minute data for 2025-11-11...
+2025-11-12 07:02:34,454 - INFO - ✅ Downloaded 375 1minute candles for 2025-11-11
+2025-11-12 07:02:35,025 - INFO - ✅ Saved to NIFTY_1min_data.db: 0 new, 375 updated
+2025-11-12 07:02:35,025 - INFO - 
+📊 Step 2: Aggregating 1-min → Daily...
+2025-11-12 07:02:35,025 - INFO - ✅ Aggregated 375 1-min candles → 1 daily candle
+2025-11-12 07:02:35,035 - INFO - ✅ Saved to NIFTY_1day_data.db: 0 new, 0 updated, 1 skipped (outside market hours)
+2025-11-12 07:02:35,035 - INFO - 
+📊 Step 3: Downloading 5-minute data...
+2025-11-12 07:02:35,036 - INFO - 📥 Downloading 5minute data for 2025-11-11...
+2025-11-12 07:02:35,408 - INFO - ✅ Downloaded 75 5minute candles for 2025-11-11
+2025-11-12 07:02:35,529 - INFO - ✅ Saved 75 rows to NIFTY_5min_data.db
+2025-11-12 07:02:35,529 - INFO - 
+📊 Step 4: Aggregating 5-min → 15-min...
+2025-11-12 07:02:35,574 - INFO - ✅ Aggregated 75 → 25 (5min → 15min)
+2025-11-12 07:02:35,675 - INFO - ✅ Saved 25 rows to NIFTY_15min_data.db
+2025-11-12 07:02:35,675 - INFO - 
+📊 Step 5: Aggregating 15-min → 1-hour...
+2025-11-12 07:02:35,675 - INFO - ✅ Aggregated 25 → 7 (15min → 1hour)
+2025-11-12 07:02:35,755 - INFO - ✅ Saved to NIFTY_1hour_data.db: 6 new, 0 updated, 1 skipped (outside market hours)
+2025-11-12 07:02:35,755 - INFO - 
+================================================================================
+2025-11-12 07:02:35,755 - INFO - ✅ HISTORICAL DATA DOWNLOAD COMPLETE
+2025-11-12 07:02:35,755 - INFO - ================================================================================
+

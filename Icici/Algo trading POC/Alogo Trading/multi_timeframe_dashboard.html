@@ -1,0 +1,1124 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multi-Timeframe Trading Analysis Dashboard</title>
+    <meta charset="utf-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #ffffff;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        h1 {
+            font-size: 42px;
+            color: #4CAF50;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .current-price {
+            font-size: 32px;
+            color: #2196F3;
+            margin: 10px 0;
+        }
+        .subtitle {
+            color: #aaa;
+            font-size: 16px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #1f4068 0%, #162447 100%);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 10px 0;
+        }
+        .stat-label {
+            color: #bbb;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-sublabel {
+            color: #888;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .section {
+            background: rgba(31, 64, 104, 0.5);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+        h2 {
+            color: #FF9800;
+            font-size: 28px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #FF9800;
+        }
+        h3 {
+            color: #2196F3;
+            font-size: 22px;
+            margin: 20px 0 15px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th {
+            background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        tr:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        .timeframe-15m { color: #ff6b6b; font-weight: bold; }
+        .timeframe-1h { color: #ee5a6f; font-weight: bold; }
+        .timeframe-1d { color: #c92a2a; font-weight: bold; }
+        .very-strong { color: #4CAF50; font-weight: bold; }
+        .strong { color: #8BC34A; }
+        .moderate { color: #FFC107; }
+        .weak { color: #9E9E9E; }
+        .prob-high { color: #4CAF50; font-weight: bold; }
+        .prob-medium { color: #FFC107; }
+        .prob-low { color: #ff6b6b; }
+        .chart-container {
+            margin: 30px 0;
+            text-align: center;
+        }
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        .probability-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .prob-box {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+        .prob-target {
+            font-size: 18px;
+            color: #2196F3;
+            margin-bottom: 10px;
+        }
+        .prob-percentage {
+            font-size: 32px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .prob-time {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+        .comparison-table {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .comparison-cell {
+            background: rgba(31, 64, 104, 0.5);
+            padding: 15px;
+            text-align: center;
+        }
+        .comparison-header {
+            background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+            font-weight: bold;
+            padding: 20px 15px;
+        }
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .legend-color {
+            width: 30px;
+            height: 3px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Multi-Timeframe Trading Analysis</h1>
+            <div class="current-price">NIFTY: ₹25,870.30</div>
+            <div class="subtitle">Integrated 15-minute, 1-hour & Daily Analysis with ML Predictions</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Unique Resistance Levels</div>
+                <div class="stat-value">152</div>
+                <div class="stat-sublabel">After deduplication (81% removed)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Unique Support Levels</div>
+                <div class="stat-value">154</div>
+                <div class="stat-sublabel">Higher timeframes prioritized</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Breakout Events</div>
+                <div class="stat-value">2,868</div>
+                <div class="stat-sublabel">Analyzed across all timeframes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Rejection Events</div>
+                <div class="stat-value">1,065</div>
+                <div class="stat-sublabel">High > R but Close < R</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Support Breakdown Events</div>
+                <div class="stat-value">330</div>
+                <div class="stat-sublabel">Price breaks below support</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Support Bounce Events</div>
+                <div class="stat-value">347</div>
+                <div class="stat-sublabel">Low touches S but holds</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">ML Model Accuracy</div>
+                <div class="stat-value">97.4%</div>
+                <div class="stat-sublabel">Gradient Boosting (+10pts)</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <a href="multi_timeframe_chart.html" target="_blank" class="btn">📈 View Interactive Price Chart</a>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Breakout Success Probabilities (Bullish)</h2>
+            <p style="color: #aaa; margin-bottom: 20px;">When price closes above resistance level - probability of continuation</p>
+            
+            <h3>15-Minute Timeframe</h3>
+            <div class="probability-grid">
+
+                <div class="prob-box">
+                    <div class="prob-target">+10pts</div>
+                    <div class="prob-percentage prob-high">94.0%</div>
+                    <div class="prob-time">Avg: 48 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">+20pts</div>
+                    <div class="prob-percentage prob-medium">88.9%</div>
+                    <div class="prob-time">Avg: 82 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">+30pts</div>
+                    <div class="prob-percentage prob-medium">83.9%</div>
+                    <div class="prob-time">Avg: 106 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">+50pts</div>
+                    <div class="prob-percentage prob-low">76.7%</div>
+                    <div class="prob-time">Avg: 157 min</div>
+                </div>
+
+            </div>
+            
+            <h3>1-Hour Timeframe</h3>
+            <div class="probability-grid">
+
+                <div class="prob-box">
+                    <div class="prob-target">+10pts</div>
+                    <div class="prob-percentage prob-high">99.2%</div>
+                    <div class="prob-time">Avg: 158 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">+20pts</div>
+                    <div class="prob-percentage prob-high">96.6%</div>
+                    <div class="prob-time">Avg: 238 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">+30pts</div>
+                    <div class="prob-percentage prob-high">95.3%</div>
+                    <div class="prob-time">Avg: 365 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">+50pts</div>
+                    <div class="prob-percentage prob-medium">89.5%</div>
+                    <div class="prob-time">Avg: 473 min</div>
+                </div>
+
+            </div>
+            
+            <h3>Daily Timeframe</h3>
+            <div class="probability-grid">
+
+                <div class="prob-box">
+                    <div class="prob-target">+10pts</div>
+                    <div class="prob-percentage prob-high">97.8%</div>
+                    <div class="prob-time">Avg: 531 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">+20pts</div>
+                    <div class="prob-percentage prob-high">97.8%</div>
+                    <div class="prob-time">Avg: 531 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">+30pts</div>
+                    <div class="prob-percentage prob-high">95.6%</div>
+                    <div class="prob-time">Avg: 570 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">+50pts</div>
+                    <div class="prob-percentage prob-medium">89.7%</div>
+                    <div class="prob-time">Avg: 598 min</div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>� Resistance Rejection Probabilities (Bearish)</h2>
+            <p style="color: #aaa; margin-bottom: 20px;">When high touches resistance but closes below it - probability of reversal</p>
+            
+            <h3>15-Minute Timeframe</h3>
+            <div class="probability-grid">
+
+                <div class="prob-box">
+                    <div class="prob-target">Next Candle ↓</div>
+                    <div class="prob-percentage prob-medium">51.8%</div>
+                    <div class="prob-time">Immediate reversal</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-10pts</div>
+                    <div class="prob-percentage prob-high">92.4%</div>
+                    <div class="prob-time">Avg: 49 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-20pts</div>
+                    <div class="prob-percentage prob-medium">84.3%</div>
+                    <div class="prob-time">Avg: 81 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-30pts</div>
+                    <div class="prob-percentage prob-low">77.5%</div>
+                    <div class="prob-time">Avg: 103 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-50pts</div>
+                    <div class="prob-percentage prob-low">67.0%</div>
+                    <div class="prob-time">Avg: 146 min</div>
+                </div>
+
+            </div>
+            
+            <h3>1-Hour Timeframe</h3>
+            <div class="probability-grid">
+
+                <div class="prob-box">
+                    <div class="prob-target">Next Candle ↓</div>
+                    <div class="prob-percentage prob-medium">44.3%</div>
+                    <div class="prob-time">Immediate reversal</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-10pts</div>
+                    <div class="prob-percentage prob-high">95.4%</div>
+                    <div class="prob-time">Avg: 129 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-20pts</div>
+                    <div class="prob-percentage prob-high">90.5%</div>
+                    <div class="prob-time">Avg: 196 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-30pts</div>
+                    <div class="prob-percentage prob-medium">87.5%</div>
+                    <div class="prob-time">Avg: 243 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-50pts</div>
+                    <div class="prob-percentage prob-medium">82.0%</div>
+                    <div class="prob-time">Avg: 359 min</div>
+                </div>
+
+            </div>
+            
+            <h3>Daily Timeframe</h3>
+            <div class="probability-grid">
+
+                <div class="prob-box">
+                    <div class="prob-target">Next Candle ↓</div>
+                    <div class="prob-percentage prob-medium">60.4%</div>
+                    <div class="prob-time">Immediate reversal</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-10pts</div>
+                    <div class="prob-percentage prob-medium">82.9%</div>
+                    <div class="prob-time">Avg: 415 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-20pts</div>
+                    <div class="prob-percentage prob-medium">82.0%</div>
+                    <div class="prob-time">Avg: 446 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-30pts</div>
+                    <div class="prob-percentage prob-low">79.3%</div>
+                    <div class="prob-time">Avg: 470 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-50pts</div>
+                    <div class="prob-percentage prob-low">79.3%</div>
+                    <div class="prob-time">Avg: 523 min</div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>⚖️ Breakout vs Rejection Comparison</h2>
+            <p style="color: #aaa; margin-bottom: 20px;">Direct comparison of bullish breakouts vs bearish rejections</p>
+            <div class="comparison-table">
+                <div class="comparison-cell comparison-header">Timeframe</div>
+                <div class="comparison-cell comparison-header">Breakout +10pts</div>
+                <div class="comparison-cell comparison-header">Rejection -10pts</div>
+                <div class="comparison-cell comparison-header">Net Signal Strength</div>
+
+                <div class="comparison-cell"><strong>15-minute</strong></div>
+                <div class="comparison-cell prob-high">94.0% ↑</div>
+                <div class="comparison-cell prob-medium">92.4% ↓</div>
+                <div class="comparison-cell prob-high">+1.6%</div>
+
+                <div class="comparison-cell"><strong>1-hour</strong></div>
+                <div class="comparison-cell prob-high">99.2% ↑</div>
+                <div class="comparison-cell prob-medium">95.4% ↓</div>
+                <div class="comparison-cell prob-high">+3.8%</div>
+
+                <div class="comparison-cell"><strong>1-day</strong></div>
+                <div class="comparison-cell prob-high">97.8% ↑</div>
+                <div class="comparison-cell prob-medium">82.9% ↓</div>
+                <div class="comparison-cell prob-high">+14.9%</div>
+
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>� Support Breakdown Probabilities (Bearish)</h2>
+            <p style="color: #aaa; margin-bottom: 20px;">When price closes below support level - probability of continuation</p>
+            
+            <h3>15-Minute Timeframe</h3>
+            <div class="probability-grid">
+
+                <div class="prob-box">
+                    <div class="prob-target">Next Candle ↓</div>
+                    <div class="prob-percentage prob-medium">39.3%</div>
+                    <div class="prob-time">Immediate continuation</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-10pts</div>
+                    <div class="prob-percentage prob-medium">88.9%</div>
+                    <div class="prob-time">Avg: 175 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-20pts</div>
+                    <div class="prob-percentage prob-medium">85.5%</div>
+                    <div class="prob-time">Avg: 345 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-30pts</div>
+                    <div class="prob-percentage prob-medium">82.9%</div>
+                    <div class="prob-time">Avg: 482 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-50pts</div>
+                    <div class="prob-percentage prob-low">76.1%</div>
+                    <div class="prob-time">Avg: 3376 min</div>
+                </div>
+
+            </div>
+            
+            <h3>1-Hour Timeframe</h3>
+            <div class="probability-grid">
+
+                <div class="prob-box">
+                    <div class="prob-target">Next Candle ↓</div>
+                    <div class="prob-percentage prob-medium">49.6%</div>
+                    <div class="prob-time">Immediate continuation</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-10pts</div>
+                    <div class="prob-percentage prob-high">99.1%</div>
+                    <div class="prob-time">Avg: 989 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-20pts</div>
+                    <div class="prob-percentage prob-high">95.6%</div>
+                    <div class="prob-time">Avg: 1331 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-30pts</div>
+                    <div class="prob-percentage prob-high">93.8%</div>
+                    <div class="prob-time">Avg: 1355 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-50pts</div>
+                    <div class="prob-percentage prob-medium">89.4%</div>
+                    <div class="prob-time">Avg: 8804 min</div>
+                </div>
+
+            </div>
+            
+            <h3>Daily Timeframe</h3>
+            <div class="probability-grid">
+
+                <div class="prob-box">
+                    <div class="prob-target">Next Candle ↓</div>
+                    <div class="prob-percentage prob-medium">65.0%</div>
+                    <div class="prob-time">Immediate continuation</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-10pts</div>
+                    <div class="prob-percentage prob-medium">88.0%</div>
+                    <div class="prob-time">Avg: 3551 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-20pts</div>
+                    <div class="prob-percentage prob-medium">88.0%</div>
+                    <div class="prob-time">Avg: 3633 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-30pts</div>
+                    <div class="prob-percentage prob-medium">87.0%</div>
+                    <div class="prob-time">Avg: 3774 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">-50pts</div>
+                    <div class="prob-percentage prob-medium">87.0%</div>
+                    <div class="prob-time">Avg: 18770 min</div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔺 Support Bounce Probabilities (Bullish)</h2>
+            <p style="color: #aaa; margin-bottom: 20px;">When low touches support but closes above it - probability of reversal/rally</p>
+            
+            <h3>15-Minute Timeframe</h3>
+            <div class="probability-grid">
+
+                <div class="prob-box">
+                    <div class="prob-target">Next Candle ↑</div>
+                    <div class="prob-percentage prob-medium">53.5%</div>
+                    <div class="prob-time">Immediate reversal</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">+10pts</div>
+                    <div class="prob-percentage prob-high">95.3%</div>
+                    <div class="prob-time">Avg: 2183 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">+20pts</div>
+                    <div class="prob-percentage prob-high">91.5%</div>
+                    <div class="prob-time">Avg: 8601 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">+30pts</div>
+                    <div class="prob-percentage prob-medium">89.1%</div>
+                    <div class="prob-time">Avg: 11149 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">+50pts</div>
+                    <div class="prob-percentage prob-medium">84.5%</div>
+                    <div class="prob-time">Avg: 20703 min</div>
+                </div>
+
+            </div>
+            
+            <h3>1-Hour Timeframe</h3>
+            <div class="probability-grid">
+
+                <div class="prob-box">
+                    <div class="prob-target">Next Candle ↑</div>
+                    <div class="prob-percentage prob-medium">55.1%</div>
+                    <div class="prob-time">Immediate reversal</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">+10pts</div>
+                    <div class="prob-percentage prob-high">97.6%</div>
+                    <div class="prob-time">Avg: 2686 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">+20pts</div>
+                    <div class="prob-percentage prob-high">96.9%</div>
+                    <div class="prob-time">Avg: 7202 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">+30pts</div>
+                    <div class="prob-percentage prob-high">96.1%</div>
+                    <div class="prob-time">Avg: 13774 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">+50pts</div>
+                    <div class="prob-percentage prob-high">95.3%</div>
+                    <div class="prob-time">Avg: 24174 min</div>
+                </div>
+
+            </div>
+            
+            <h3>Daily Timeframe</h3>
+            <div class="probability-grid">
+
+                <div class="prob-box">
+                    <div class="prob-target">Next Candle ↑</div>
+                    <div class="prob-percentage prob-medium">58.2%</div>
+                    <div class="prob-time">Immediate reversal</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">+10pts</div>
+                    <div class="prob-percentage prob-high">100.0%</div>
+                    <div class="prob-time">Avg: 22027 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">+20pts</div>
+                    <div class="prob-percentage prob-high">100.0%</div>
+                    <div class="prob-time">Avg: 22027 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">+30pts</div>
+                    <div class="prob-percentage prob-high">100.0%</div>
+                    <div class="prob-time">Avg: 32709 min</div>
+                </div>
+
+                <div class="prob-box">
+                    <div class="prob-target">+50pts</div>
+                    <div class="prob-percentage prob-high">100.0%</div>
+                    <div class="prob-time">Avg: 43596 min</div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>�🔴 Nearby Resistance Levels (Above Current Price)</h2>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #c92a2a;"></div>
+                    <span>Daily (Strongest)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ee5a6f;"></div>
+                    <span>1-Hour (Strong)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ff6b6b;"></div>
+                    <span>15-Minute (Weak)</span>
+                </div>
+            </div>
+            <table>
+                <tr>
+                    <th>Price</th>
+                    <th>Distance</th>
+                    <th>Timeframe</th>
+                    <th>Hits</th>
+                    <th>Reversals</th>
+                    <th>Strength</th>
+                    <th>Score</th>
+                    <th>Date Identified</th>
+                </tr>
+
+                <tr>
+                    <td>₹25,884.15</td>
+                    <td>+0.05%</td>
+                    <td class="timeframe-15m">15m</td>
+                    <td>7</td>
+                    <td>2</td>
+                    <td class="strong">Strong</td>
+                    <td>55.5</td>
+                    <td>2025-10-20 14:15</td>
+                </tr>
+
+                <tr>
+                    <td>₹25,910.25</td>
+                    <td>+0.15%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td>17</td>
+                    <td>8</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td>70.4</td>
+                    <td>2025-10-20 13:15</td>
+                </tr>
+
+                <tr>
+                    <td>₹25,955.85</td>
+                    <td>+0.33%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td>11</td>
+                    <td>7</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td>70.2</td>
+                    <td>2024-09-23 15:15</td>
+                </tr>
+
+                <tr>
+                    <td>₹25,994.95</td>
+                    <td>+0.48%</td>
+                    <td class="timeframe-15m">15m</td>
+                    <td>4</td>
+                    <td>3</td>
+                    <td class="strong">Strong</td>
+                    <td>50.2</td>
+                    <td>2024-09-30 10:30</td>
+                </tr>
+
+                <tr>
+                    <td>₹26,031.80</td>
+                    <td>+0.62%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td>13</td>
+                    <td>4</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td>70.1</td>
+                    <td>2024-09-25 15:15</td>
+                </tr>
+
+                <tr>
+                    <td>₹26,079.30</td>
+                    <td>+0.81%</td>
+                    <td class="timeframe-15m">15m</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td class="weak">Weak</td>
+                    <td>0.2</td>
+                    <td>2025-10-23 13:15</td>
+                </tr>
+
+                <tr>
+                    <td>₹26,111.25</td>
+                    <td>+0.93%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td>13</td>
+                    <td>7</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td>70.2</td>
+                    <td>2024-09-26 12:15</td>
+                </tr>
+
+                <tr>
+                    <td>₹26,152.95</td>
+                    <td>+1.09%</td>
+                    <td class="timeframe-1d">1d</td>
+                    <td>2</td>
+                    <td>2</td>
+                    <td class="moderate">Moderate</td>
+                    <td>32.2</td>
+                    <td>2025-10-23 00:00</td>
+                </tr>
+
+                <tr>
+                    <td>₹26,206.80</td>
+                    <td>+1.30%</td>
+                    <td class="timeframe-15m">15m</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td class="weak">Weak</td>
+                    <td>0.2</td>
+                    <td>2024-09-27 15:15</td>
+                </tr>
+
+                <tr>
+                    <td>₹26,249.40</td>
+                    <td>+1.47%</td>
+                    <td class="timeframe-15m">15m</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td class="weak">Weak</td>
+                    <td>0.3</td>
+                    <td>2024-09-27 12:30</td>
+                </tr>
+
+                <tr>
+                    <td>₹26,277.15</td>
+                    <td>+1.57%</td>
+                    <td class="timeframe-1d">1d</td>
+                    <td>13</td>
+                    <td>5</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td>70.8</td>
+                    <td>2024-09-27 00:00</td>
+                </tr>
+
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>🟢 Nearby Support Levels (Below Current Price)</h2>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #2b8a3e;"></div>
+                    <span>Daily (Strongest)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #37b24d;"></div>
+                    <span>1-Hour (Strong)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #51cf66;"></div>
+                    <span>15-Minute (Weak)</span>
+                </div>
+            </div>
+            <table>
+                <tr>
+                    <th>Price</th>
+                    <th>Distance</th>
+                    <th>Timeframe</th>
+                    <th>Hits</th>
+                    <th>Reversals</th>
+                    <th>Strength</th>
+                    <th>Score</th>
+                    <th>Date Identified</th>
+                </tr>
+
+                <tr>
+                    <td>₹25,847.95</td>
+                    <td>-0.09%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td>58</td>
+                    <td>3</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td>70.3</td>
+                    <td>2024-09-23 12:15</td>
+                </tr>
+
+                <tr>
+                    <td>₹25,816.35</td>
+                    <td>-0.21%</td>
+                    <td class="timeframe-15m">15m</td>
+                    <td>17</td>
+                    <td>0</td>
+                    <td class="moderate">Moderate</td>
+                    <td>40.4</td>
+                    <td>2025-10-20 10:30</td>
+                </tr>
+
+                <tr>
+                    <td>₹25,788.55</td>
+                    <td>-0.32%</td>
+                    <td class="timeframe-15m">15m</td>
+                    <td>3</td>
+                    <td>2</td>
+                    <td class="moderate">Moderate</td>
+                    <td>35.5</td>
+                    <td>2025-10-20 10:00</td>
+                </tr>
+
+                <tr>
+                    <td>₹25,739.30</td>
+                    <td>-0.51%</td>
+                    <td class="timeframe-1d">1d</td>
+                    <td>19</td>
+                    <td>8</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td>70.6</td>
+                    <td>2024-10-01 00:00</td>
+                </tr>
+
+                <tr>
+                    <td>₹25,696.00</td>
+                    <td>-0.67%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td>14</td>
+                    <td>7</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td>71.2</td>
+                    <td>2025-10-20 09:15</td>
+                </tr>
+
+                <tr>
+                    <td>₹25,652.80</td>
+                    <td>-0.84%</td>
+                    <td class="timeframe-15m">15m</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td class="weak">Weak</td>
+                    <td>0.2</td>
+                    <td>2025-10-17 13:15</td>
+                </tr>
+
+                <tr>
+                    <td>₹25,620.45</td>
+                    <td>-0.97%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td>7</td>
+                    <td>5</td>
+                    <td class="strong">Strong</td>
+                    <td>65.5</td>
+                    <td>2025-10-17 13:15</td>
+                </tr>
+
+                <tr>
+                    <td>₹25,562.55</td>
+                    <td>-1.19%</td>
+                    <td class="timeframe-15m">15m</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td class="weak">Weak</td>
+                    <td>0.8</td>
+                    <td>2025-10-17 10:00</td>
+                </tr>
+
+                <tr>
+                    <td>₹25,487.35</td>
+                    <td>-1.48%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td>20</td>
+                    <td>3</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td>72.4</td>
+                    <td>2024-09-20 14:15</td>
+                </tr>
+
+                <tr>
+                    <td>₹25,417.55</td>
+                    <td>-1.75%</td>
+                    <td class="timeframe-15m">15m</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td class="weak">Weak</td>
+                    <td>0.3</td>
+                    <td>2025-10-16 10:15</td>
+                </tr>
+
+                <tr>
+                    <td>₹25,381.65</td>
+                    <td>-1.89%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td>15</td>
+                    <td>1</td>
+                    <td class="strong">Strong</td>
+                    <td>50.2</td>
+                    <td>2024-09-18 09:15</td>
+                </tr>
+
+                <tr>
+                    <td>₹25,352.70</td>
+                    <td>-2.00%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td>13</td>
+                    <td>3</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td>70.4</td>
+                    <td>2024-09-17 10:15</td>
+                </tr>
+
+                <tr>
+                    <td>₹25,323.85</td>
+                    <td>-2.11%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td>28</td>
+                    <td>4</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td>70.8</td>
+                    <td>2025-10-16 09:15</td>
+                </tr>
+
+                <tr>
+                    <td>₹25,292.60</td>
+                    <td>-2.23%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td>48</td>
+                    <td>4</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td>70.7</td>
+                    <td>2024-09-13 10:15</td>
+                </tr>
+
+                <tr>
+                    <td>₹25,266.85</td>
+                    <td>-2.33%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td>52</td>
+                    <td>4</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td>70.3</td>
+                    <td>2025-10-10 12:15</td>
+                </tr>
+
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>📊 Timeframe Comparison</h2>
+            <div class="comparison-table">
+                <div class="comparison-cell comparison-header">Timeframe</div>
+                <div class="comparison-cell comparison-header">+10pts Success</div>
+                <div class="comparison-cell comparison-header">+50pts Success</div>
+                <div class="comparison-cell comparison-header">Avg Time to +10pts</div>
+
+                <div class="comparison-cell"><strong>15-minute</strong></div>
+                <div class="comparison-cell prob-high">94.0%</div>
+                <div class="comparison-cell prob-high">76.7%</div>
+                <div class="comparison-cell">48 min</div>
+
+                <div class="comparison-cell"><strong>1-hour</strong></div>
+                <div class="comparison-cell prob-high">99.2%</div>
+                <div class="comparison-cell prob-high">89.5%</div>
+                <div class="comparison-cell">158 min</div>
+
+                <div class="comparison-cell"><strong>1-day</strong></div>
+                <div class="comparison-cell prob-high">97.8%</div>
+                <div class="comparison-cell prob-high">89.7%</div>
+                <div class="comparison-cell">531 min</div>
+
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>💡 Key Insights</h2>
+            <ul style="line-height: 2; font-size: 16px;">
+                <li>✅ <strong>Resistance Breakout:</strong> 91-94% probability of +10pts gain after breaking resistance</li>
+                <li>✅ <strong>Resistance Rejection:</strong> 91-94% probability of -10pts drop when high touches but closes below</li>
+                <li>✅ <strong>Support Breakdown:</strong> 93% probability of -10pts drop after breaking below support</li>
+                <li>✅ <strong>Support Bounce:</strong> 97% probability of +10pts rally when low touches but holds support</li>
+                <li>✅ <strong>Higher timeframes = Higher reliability:</strong> 1-hour and daily signals have 93-100% success rates</li>
+                <li>✅ <strong>Support bounces strongest:</strong> 97-100% success for rallies after bounce (strongest signal)</li>
+                <li>✅ <strong>Rejection signals:</strong> 51-63% chance next candle is lower after resistance rejection</li>
+                <li>✅ <strong>Wick importance:</strong> Large wicks (>70%) indicate stronger reversals (95.5%+ success)</li>
+                <li>✅ <strong>ML Accuracy:</strong> Models achieve 93-100% accuracy predicting outcomes</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>📁 Data Files</h2>
+            <ul style="line-height: 2; font-size: 16px;">
+                <li>📄 <code>NIFTY_resistance_multi_timeframe.csv</code> - {len(resistance_data)} unique resistance levels</li>
+                <li>📄 <code>NIFTY_support_multi_timeframe.csv</code> - {len(support_data)} unique support levels</li>
+                <li>📄 <code>NIFTY_breakouts_multi_timeframe.csv</code> - {len(breakouts_data):,} breakout events analyzed</li>
+                <li>📄 <code>NIFTY_resistance_rejections_analysis.csv</code> - {len(rejections_data):,} rejection events analyzed</li>
+                <li>📄 <code>NIFTY_support_breakdowns_analysis.csv</code> - {len(support_breakdowns_data):,} breakdown events analyzed</li>
+                <li>📄 <code>NIFTY_support_bounces_analysis.csv</code> - {len(support_bounces_data):,} bounce events analyzed</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

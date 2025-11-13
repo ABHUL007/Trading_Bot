@@ -1,0 +1,611 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced NIFTY Multi-Timeframe Analysis Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        h1 {
+            color: #667eea;
+            font-size: 42px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .current-price {
+            text-align: center;
+            font-size: 32px;
+            color: #2d3748;
+            margin: 20px 0 40px 0;
+            font-weight: bold;
+        }
+        .section {
+            margin: 40px 0;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+        }
+        h2 {
+            color: #2d3748;
+            font-size: 28px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #e2e8f0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+        tr:hover {
+            background: #f7fafc;
+        }
+        .prob-high { color: #22c55e; font-weight: bold; }
+        .prob-medium { color: #f59e0b; font-weight: bold; }
+        .prob-low { color: #ef4444; font-weight: bold; }
+        
+        .timeframe-1d { 
+            background: #fef3c7;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .timeframe-1h { 
+            background: #dbeafe;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .timeframe-15m { 
+            background: #e0e7ff;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .very-strong { background: #dcfce7; color: #166534; }
+        .strong { background: #fef9c3; color: #854d0e; }
+        .moderate { background: #fef3c7; color: #92400e; }
+        .weak { background: #fee2e2; color: #991b1b; }
+        
+        .prob-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .prob-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 2px solid #e2e8f0;
+        }
+        .prob-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .prob-label {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .prob-value {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .stat-box {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 5px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .median-box {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+        .cross-tf-section {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #f59e0b;
+        }
+        .cross-tf-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #92400e;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Enhanced NIFTY Multi-Timeframe Analysis Dashboard</h1>
+        <div class="current-price">
+            Current Price: ₹25,870.30
+        </div>
+
+        <div class="section">
+            <h2>⚡ 15-Minute Candle Crossing Higher Timeframe Levels</h2>
+            
+            <div class="cross-tf-section">
+                <div class="cross-tf-title">📈 15m Closes ABOVE 1-Hour Resistance</div>
+                <div class="stat-box median-box">Median Move: +98 pts</div>
+                <div class="prob-grid">
+                    <div class="prob-card">
+                        <div class="prob-label">+10 Points</div>
+                        <div class="prob-value prob-high">92.5%</div>
+                    </div>
+                    <div class="prob-card">
+                        <div class="prob-label">+20 Points</div>
+                        <div class="prob-value prob-high">86.8%</div>
+                    </div>
+                    <div class="prob-card">
+                        <div class="prob-label">+30 Points</div>
+                        <div class="prob-value prob-medium">78.0%</div>
+                    </div>
+                    <div class="prob-card">
+                        <div class="prob-label">+50 Points</div>
+                        <div class="prob-value prob-medium">70.4%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="cross-tf-section" style="background: linear-gradient(135deg, #fef9c3 0%, #fef3c7 100%);">
+                <div class="cross-tf-title">📈 15m Closes ABOVE Daily Resistance</div>
+                <div class="stat-box median-box">Median Move: +203 pts</div>
+                <div class="prob-grid">
+                    <div class="prob-card">
+                        <div class="prob-label">+10 Points</div>
+                        <div class="prob-value prob-high">97.0%</div>
+                    </div>
+                    <div class="prob-card">
+                        <div class="prob-label">+20 Points</div>
+                        <div class="prob-value prob-high">93.9%</div>
+                    </div>
+                    <div class="prob-card">
+                        <div class="prob-label">+30 Points</div>
+                        <div class="prob-value prob-high">93.9%</div>
+                    </div>
+                    <div class="prob-card">
+                        <div class="prob-label">+50 Points</div>
+                        <div class="prob-value prob-high">87.9%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="cross-tf-section" style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);">
+                <div class="cross-tf-title">📉 15m Closes BELOW 1-Hour Support</div>
+                <div class="stat-box median-box">Median Drop: -109 pts</div>
+                <div class="prob-grid">
+                    <div class="prob-card">
+                        <div class="prob-label">-10 Points</div>
+                        <div class="prob-value prob-high">95.6%</div>
+                    </div>
+                    <div class="prob-card">
+                        <div class="prob-label">-20 Points</div>
+                        <div class="prob-value prob-high">87.4%</div>
+                    </div>
+                    <div class="prob-card">
+                        <div class="prob-label">-30 Points</div>
+                        <div class="prob-value prob-medium">80.8%</div>
+                    </div>
+                    <div class="prob-card">
+                        <div class="prob-label">-50 Points</div>
+                        <div class="prob-value prob-medium">68.7%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="cross-tf-section" style="background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);">
+                <div class="cross-tf-title">📉 15m Closes BELOW Daily Support</div>
+                <div class="stat-box median-box">Median Drop: -225 pts</div>
+                <div class="prob-grid">
+                    <div class="prob-card">
+                        <div class="prob-label">-10 Points</div>
+                        <div class="prob-value prob-high">96.8%</div>
+                    </div>
+                    <div class="prob-card">
+                        <div class="prob-label">-20 Points</div>
+                        <div class="prob-value prob-high">90.3%</div>
+                    </div>
+                    <div class="prob-card">
+                        <div class="prob-label">-30 Points</div>
+                        <div class="prob-value prob-high">87.1%</div>
+                    </div>
+                    <div class="prob-card">
+                        <div class="prob-label">-50 Points</div>
+                        <div class="prob-value prob-medium">83.9%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔴 Nearby Resistance Levels with Probability Analysis</h2>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #c92a2a;"></div>
+                    <span>Daily (Strongest)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ee5a6f;"></div>
+                    <span>1-Hour (Strong)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ff6b6b;"></div>
+                    <span>15-Minute</span>
+                </div>
+            </div>
+            <table>
+                <tr>
+                    <th>Price</th>
+                    <th>Distance</th>
+                    <th>Timeframe</th>
+                    <th>Strength</th>
+                    <th colspan="2">Breakout Probability</th>
+                    <th colspan="2">Rejection Probability</th>
+                </tr>
+                <tr>
+                    <th colspan="4"></th>
+                    <th>+10pts</th>
+                    <th>+20pts</th>
+                    <th>-10pts</th>
+                    <th>-20pts</th>
+                </tr>
+
+                <tr>
+                    <td><strong>₹25,884.15</strong></td>
+                    <td>+0.05%</td>
+                    <td class="timeframe-15m">15m</td>
+                    <td class="strong">Strong</td>
+                    <td class="prob-high">94.0%</td>
+                    <td class="prob-medium">88.9%</td>
+                    <td class="prob-high">92.4%</td>
+                    <td class="prob-medium">84.3%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>₹25,910.25</strong></td>
+                    <td>+0.15%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td class="prob-high">99.2%</td>
+                    <td class="prob-high">96.6%</td>
+                    <td class="prob-high">95.4%</td>
+                    <td class="prob-high">90.5%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>₹25,955.85</strong></td>
+                    <td>+0.33%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td class="prob-high">99.2%</td>
+                    <td class="prob-high">96.6%</td>
+                    <td class="prob-high">95.4%</td>
+                    <td class="prob-high">90.5%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>₹25,994.95</strong></td>
+                    <td>+0.48%</td>
+                    <td class="timeframe-15m">15m</td>
+                    <td class="strong">Strong</td>
+                    <td class="prob-high">94.0%</td>
+                    <td class="prob-medium">88.9%</td>
+                    <td class="prob-high">92.4%</td>
+                    <td class="prob-medium">84.3%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>₹26,031.80</strong></td>
+                    <td>+0.62%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td class="prob-high">99.2%</td>
+                    <td class="prob-high">96.6%</td>
+                    <td class="prob-high">95.4%</td>
+                    <td class="prob-high">90.5%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>₹26,079.30</strong></td>
+                    <td>+0.81%</td>
+                    <td class="timeframe-15m">15m</td>
+                    <td class="weak">Weak</td>
+                    <td class="prob-high">94.0%</td>
+                    <td class="prob-medium">88.9%</td>
+                    <td class="prob-high">92.4%</td>
+                    <td class="prob-medium">84.3%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>₹26,111.25</strong></td>
+                    <td>+0.93%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td class="prob-high">99.2%</td>
+                    <td class="prob-high">96.6%</td>
+                    <td class="prob-high">95.4%</td>
+                    <td class="prob-high">90.5%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>₹26,152.95</strong></td>
+                    <td>+1.09%</td>
+                    <td class="timeframe-1d">1d</td>
+                    <td class="moderate">Moderate</td>
+                    <td class="prob-high">97.8%</td>
+                    <td class="prob-high">97.8%</td>
+                    <td class="prob-medium">82.9%</td>
+                    <td class="prob-medium">82.0%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>₹26,206.80</strong></td>
+                    <td>+1.30%</td>
+                    <td class="timeframe-15m">15m</td>
+                    <td class="weak">Weak</td>
+                    <td class="prob-high">94.0%</td>
+                    <td class="prob-medium">88.9%</td>
+                    <td class="prob-high">92.4%</td>
+                    <td class="prob-medium">84.3%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>₹26,249.40</strong></td>
+                    <td>+1.47%</td>
+                    <td class="timeframe-15m">15m</td>
+                    <td class="weak">Weak</td>
+                    <td class="prob-high">94.0%</td>
+                    <td class="prob-medium">88.9%</td>
+                    <td class="prob-high">92.4%</td>
+                    <td class="prob-medium">84.3%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>₹26,277.15</strong></td>
+                    <td>+1.57%</td>
+                    <td class="timeframe-1d">1d</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td class="prob-high">97.8%</td>
+                    <td class="prob-high">97.8%</td>
+                    <td class="prob-medium">82.9%</td>
+                    <td class="prob-medium">82.0%</td>
+                </tr>
+
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>🟢 Nearby Support Levels with Probability Analysis</h2>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #2b8a3e;"></div>
+                    <span>Daily (Strongest)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #37b24d;"></div>
+                    <span>1-Hour (Strong)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #51cf66;"></div>
+                    <span>15-Minute</span>
+                </div>
+            </div>
+            <table>
+                <tr>
+                    <th>Price</th>
+                    <th>Distance</th>
+                    <th>Timeframe</th>
+                    <th>Strength</th>
+                    <th colspan="2">Bounce Probability</th>
+                    <th colspan="2">Breakdown Probability</th>
+                </tr>
+                <tr>
+                    <th colspan="4"></th>
+                    <th>+10pts</th>
+                    <th>+20pts</th>
+                    <th>-10pts</th>
+                    <th>-20pts</th>
+                </tr>
+
+                <tr>
+                    <td><strong>₹25,847.95</strong></td>
+                    <td>-0.09%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td class="prob-high">97.6%</td>
+                    <td class="prob-high">96.9%</td>
+                    <td class="prob-high">99.1%</td>
+                    <td class="prob-high">95.6%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>₹25,816.35</strong></td>
+                    <td>-0.21%</td>
+                    <td class="timeframe-15m">15m</td>
+                    <td class="moderate">Moderate</td>
+                    <td class="prob-high">95.3%</td>
+                    <td class="prob-high">91.5%</td>
+                    <td class="prob-medium">88.9%</td>
+                    <td class="prob-medium">85.5%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>₹25,788.55</strong></td>
+                    <td>-0.32%</td>
+                    <td class="timeframe-15m">15m</td>
+                    <td class="moderate">Moderate</td>
+                    <td class="prob-high">95.3%</td>
+                    <td class="prob-high">91.5%</td>
+                    <td class="prob-medium">88.9%</td>
+                    <td class="prob-medium">85.5%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>₹25,739.30</strong></td>
+                    <td>-0.51%</td>
+                    <td class="timeframe-1d">1d</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td class="prob-high">100.0%</td>
+                    <td class="prob-high">100.0%</td>
+                    <td class="prob-medium">88.0%</td>
+                    <td class="prob-medium">88.0%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>₹25,696.00</strong></td>
+                    <td>-0.67%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td class="prob-high">97.6%</td>
+                    <td class="prob-high">96.9%</td>
+                    <td class="prob-high">99.1%</td>
+                    <td class="prob-high">95.6%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>₹25,652.80</strong></td>
+                    <td>-0.84%</td>
+                    <td class="timeframe-15m">15m</td>
+                    <td class="weak">Weak</td>
+                    <td class="prob-high">95.3%</td>
+                    <td class="prob-high">91.5%</td>
+                    <td class="prob-medium">88.9%</td>
+                    <td class="prob-medium">85.5%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>₹25,620.45</strong></td>
+                    <td>-0.97%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td class="strong">Strong</td>
+                    <td class="prob-high">97.6%</td>
+                    <td class="prob-high">96.9%</td>
+                    <td class="prob-high">99.1%</td>
+                    <td class="prob-high">95.6%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>₹25,562.55</strong></td>
+                    <td>-1.19%</td>
+                    <td class="timeframe-15m">15m</td>
+                    <td class="weak">Weak</td>
+                    <td class="prob-high">95.3%</td>
+                    <td class="prob-high">91.5%</td>
+                    <td class="prob-medium">88.9%</td>
+                    <td class="prob-medium">85.5%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>₹25,487.35</strong></td>
+                    <td>-1.48%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td class="very-strong">Very Strong</td>
+                    <td class="prob-high">97.6%</td>
+                    <td class="prob-high">96.9%</td>
+                    <td class="prob-high">99.1%</td>
+                    <td class="prob-high">95.6%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>₹25,417.55</strong></td>
+                    <td>-1.75%</td>
+                    <td class="timeframe-15m">15m</td>
+                    <td class="weak">Weak</td>
+                    <td class="prob-high">95.3%</td>
+                    <td class="prob-high">91.5%</td>
+                    <td class="prob-medium">88.9%</td>
+                    <td class="prob-medium">85.5%</td>
+                </tr>
+
+                <tr>
+                    <td><strong>₹25,381.65</strong></td>
+                    <td>-1.89%</td>
+                    <td class="timeframe-1h">1h</td>
+                    <td class="strong">Strong</td>
+                    <td class="prob-high">97.6%</td>
+                    <td class="prob-high">96.9%</td>
+                    <td class="prob-high">99.1%</td>
+                    <td class="prob-high">95.6%</td>
+                </tr>
+
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>💡 Key Insights & Trading Signals</h2>
+            <ul style="line-height: 2.5; font-size: 16px;">
+                <li>✅ <strong>15m crossing 1-hour resistance:</strong> 92.5% probability of +10pts (Median: +98pts)</li>
+                <li>✅ <strong>15m crossing daily resistance:</strong> 97.0% probability of +10pts (Median: +203pts)</li>
+                <li>✅ <strong>15m breaking 1-hour support:</strong> 95.6% probability of -10pts (Median: -109pts)</li>
+                <li>✅ <strong>15m breaking daily support:</strong> 96.8% probability of -10pts (Median: -225pts)</li>
+                <li>✅ <strong>Higher timeframe = More reliable:</strong> Daily levels show highest success rates (87-100%)</li>
+                <li>✅ <strong>Best signals:</strong> Daily resistance breakout (93.9% for +30pts) and Daily support breakdown (87.1% for -30pts)</li>
+                <li>✅ <strong>ML Models used:</strong> RandomForest & GradientBoosting with 93-100% accuracy</li>
+                <li>✅ <strong>Support bounces strongest:</strong> 95-100% success rates across all timeframes</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
