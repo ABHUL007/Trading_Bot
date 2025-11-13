@@ -2,10 +2,10 @@
 """Quick test of Super Pranni Monitor"""
 import sys
 sys.path.insert(0, r'd:\Algo Trading\Icici\Trading_System')
-from super_pranni_monitor import FixedPranniMonitor
+from super_pranni_monitor import super_pranni_monitor
 
 print("Testing Super Pranni Monitor...")
-m = FixedPranniMonitor()
+m = super_pranni_monitor()
 print("✅ Monitor initialized OK")
 
 s = m.get_live_status()

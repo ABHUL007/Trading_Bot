@@ -527,12 +527,12 @@ def get_fixed_monitor():
     """Get the global fixed monitor instance"""
     global _monitor_instance
     if _monitor_instance is None:
-        _monitor_instance = FixedPranniMonitor()
+        _monitor_instance = super_pranni_monitor()
     return _monitor_instance
 
 if __name__ == "__main__":
     # Test the fixed monitor
-    monitor = FixedPranniMonitor()
+    monitor = super_pranni_monitor()
     
     print("\n📊 TESTING FIXED BREAKOUT DETECTION")
     print("=" * 50)
@@ -556,6 +556,3 @@ if __name__ == "__main__":
         for level in status['broken_levels']:
             print(f"   • {level}")
 
-
-# Alias for compatibility
-SuperPranniMonitor = FixedPranniMonitor

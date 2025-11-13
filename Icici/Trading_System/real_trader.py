@@ -46,7 +46,7 @@ load_dotenv(ENV_FILE)
 # Import super pranni monitor
 import sys
 sys.path.append(BASE_DIR)
-from super_pranni_monitor import FixedPranniMonitor
+from super_pranni_monitor import super_pranni_monitor
 
 
 class SafeAPIManager:
@@ -138,14 +138,14 @@ class RealTrader:
         # Trading parameters
         self.lot_size = 75  # NIFTY lot size
         self.target_per_lot = 10  # ₹10 profit target
-        self.sl_consecutive_candles = 2  # Stop-loss after 2 consecutive candles
+        self.sl_consecutive_candles = 1  # Stop-loss after 1 consecutive candle
         
         # Breeze connection
         self.breeze = None
         self.paper_trading = os.getenv('PAPER_TRADING', 'true').lower() == 'true'
         
         # Super Pranni Monitor
-        self.monitor = FixedPranniMonitor()
+        self.monitor = super_pranni_monitor()
         
         logger.info("🎯 Real Trader initialized")
         logger.info(f"   {'📝 PAPER TRADING MODE' if self.paper_trading else '💰 LIVE TRADING MODE'}")
