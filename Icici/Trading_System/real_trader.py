@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 REAL TRADING BOT - Live Breeze Connect Implementation
 - 1 lot (75 quantity) NIFTY options
-- ₹10 target per lot (immediate exit)
+- â‚¹10 target per lot (immediate exit)
 - Level-based stop-loss (2 consecutive 5-min candles against direction)
 - On-demand price fetching (no background collection)
 - API-safe: <95 calls/minute
@@ -46,7 +46,7 @@ load_dotenv(ENV_FILE)
 # Import super pranni monitor
 import sys
 sys.path.append(BASE_DIR)
-from super_pranni_monitor import super_pranni_monitor
+from super_pranni_monitor import FixedPranniMonitor
 
 
 class SafeAPIManager:
@@ -56,7 +56,7 @@ class SafeAPIManager:
         self.max_calls_per_minute = max_calls_per_minute
         self.call_history = deque()
         self.total_session_calls = 0
-        logger.info(f"🛡️ Safe API Manager: {max_calls_per_minute} calls/minute limit")
+        logger.info(f"ðŸ›¡ï¸ Safe API Manager: {max_calls_per_minute} calls/minute limit")
     
     def can_make_api_call(self):
         """Check if we can make an API call safely"""
@@ -69,7 +69,7 @@ class SafeAPIManager:
         current_minute_calls = len(self.call_history)
         
         if current_minute_calls >= self.max_calls_per_minute:
-            logger.warning(f"⚠️ API limit reached: {current_minute_calls}/{self.max_calls_per_minute}")
+            logger.warning(f"âš ï¸ API limit reached: {current_minute_calls}/{self.max_calls_per_minute}")
             return False
         
         return True
@@ -83,13 +83,13 @@ class SafeAPIManager:
         current_usage = len(self.call_history)
         remaining = self.max_calls_per_minute - current_usage
         
-        logger.debug(f"📡 API Call #{current_usage}/{self.max_calls_per_minute} ({call_type}) - {remaining} remaining")
+        logger.debug(f"ðŸ“¡ API Call #{current_usage}/{self.max_calls_per_minute} ({call_type}) - {remaining} remaining")
     
     async def safe_api_call(self, api_function, call_type="general", *args, **kwargs):
         """Make API call with automatic throttling"""
         # Wait until we can safely make the call
         while not self.can_make_api_call():
-            logger.warning("⚠️ API throttling - waiting 1 second...")
+            logger.warning("âš ï¸ API throttling - waiting 1 second...")
             await asyncio.sleep(1)
         
         # Record the call
@@ -100,7 +100,7 @@ class SafeAPIManager:
             result = api_function(*args, **kwargs)
             return result
         except Exception as e:
-            logger.error(f"❌ API call failed ({call_type}): {e}")
+            logger.error(f"âŒ API call failed ({call_type}): {e}")
             return None
     
     def get_usage_stats(self):
@@ -137,7 +137,7 @@ class RealTrader:
         
         # Trading parameters
         self.lot_size = 75  # NIFTY lot size
-        self.target_per_lot = 10  # ₹10 profit target
+        self.target_per_lot = 10  # â‚¹10 profit target
         self.sl_consecutive_candles = 1  # Stop-loss after 1 consecutive candle
         
         # Breeze connection
@@ -145,19 +145,19 @@ class RealTrader:
         self.paper_trading = os.getenv('PAPER_TRADING', 'true').lower() == 'true'
         
         # Super Pranni Monitor
-        self.monitor = super_pranni_monitor()
+        self.monitor = FixedPranniMonitor()
         
-        logger.info("🎯 Real Trader initialized")
-        logger.info(f"   {'📝 PAPER TRADING MODE' if self.paper_trading else '💰 LIVE TRADING MODE'}")
+        logger.info("ðŸŽ¯ Real Trader initialized")
+        logger.info(f"   {'ðŸ“ PAPER TRADING MODE' if self.paper_trading else 'ðŸ’° LIVE TRADING MODE'}")
         logger.info(f"   Lot size: {self.lot_size}")
-        logger.info(f"   Target: ₹{self.target_per_lot}/lot")
+        logger.info(f"   Target: â‚¹{self.target_per_lot}/lot")
         logger.info(f"   Stop-loss: {self.sl_consecutive_candles} consecutive candles")
     
     def connect_to_breeze(self):
         """Connect to Breeze API (real or simulated)"""
         try:
             if self.paper_trading:
-                logger.info("📝 PAPER TRADING: Using simulated Breeze connection")
+                logger.info("ðŸ“ PAPER TRADING: Using simulated Breeze connection")
                 self.breeze = type('MockBreeze', (), {
                     'place_order': lambda *args, **kwargs: {'Success': {'order_id': f'PAPER{datetime.now().strftime("%Y%m%d%H%M%S")}', 'message': 'Paper order placed'}},
                     'square_off': lambda *args, **kwargs: {'Success': {'order_id': f'PAPEREX{datetime.now().strftime("%Y%m%d%H%M%S")}', 'message': 'Paper exit placed'}},
@@ -165,7 +165,7 @@ class RealTrader:
                     'get_order_detail': lambda *args, **kwargs: {'Success': [{'status': 'Executed'}]},
                     'get_portfolio_positions': lambda *args, **kwargs: {'Success': []}
                 })()
-                logger.info("✅ Simulated Breeze connection established")
+                logger.info("âœ… Simulated Breeze connection established")
                 return True
             
             # Real Breeze connection
@@ -176,17 +176,17 @@ class RealTrader:
             session_token = os.getenv('ICICI_SESSION_TOKEN')
             
             if not all([api_key, api_secret, session_token]):
-                logger.error("❌ Missing Breeze API credentials in .env file")
+                logger.error("âŒ Missing Breeze API credentials in .env file")
                 return False
             
             self.breeze = BreezeConnect(api_key=api_key)
             self.breeze.generate_session(api_secret=api_secret, session_token=session_token)
             
-            logger.info("✅ Connected to ICICI Breeze API (LIVE)")
+            logger.info("âœ… Connected to ICICI Breeze API (LIVE)")
             return True
             
         except Exception as e:
-            logger.error(f"❌ Breeze connection failed: {e}")
+            logger.error(f"âŒ Breeze connection failed: {e}")
             return False
     
     def get_next_expiry(self):
@@ -224,14 +224,14 @@ class RealTrader:
             
             if result and 'Success' in result and result['Success']:
                 ltp = float(result['Success'][0]['ltp'])
-                logger.debug(f"💰 {strike} {direction} @ ₹{ltp:.2f}")
+                logger.debug(f"ðŸ’° {strike} {direction} @ â‚¹{ltp:.2f}")
                 return ltp
             
-            logger.warning(f"⚠️ Could not fetch price for {strike} {direction}")
+            logger.warning(f"âš ï¸ Could not fetch price for {strike} {direction}")
             return None
             
         except Exception as e:
-            logger.error(f"❌ Error fetching option premium: {e}")
+            logger.error(f"âŒ Error fetching option premium: {e}")
             return None
     
     def calculate_nearest_strike(self, nifty_price):
@@ -247,7 +247,7 @@ class RealTrader:
             option_type = "call" if direction == "CALL" else "put"
             expiry_date = self.get_next_expiry()
             
-            logger.info(f"🔥 PLACING ORDER: {strike} {direction} @ ₹{entry_premium:.2f}")
+            logger.info(f"ðŸ”¥ PLACING ORDER: {strike} {direction} @ â‚¹{entry_premium:.2f}")
             
             # Place market order
             result = await self.api_manager.safe_api_call(
@@ -272,7 +272,7 @@ class RealTrader:
             
             if result and 'Success' in result:
                 order_id = result['Success']['order_id']
-                logger.info(f"✅ ORDER PLACED: {order_id}")
+                logger.info(f"âœ… ORDER PLACED: {order_id}")
                 
                 # Verify order execution
                 await asyncio.sleep(2)  # Wait for execution
@@ -291,11 +291,11 @@ class RealTrader:
                 
                 return order_id
             
-            logger.error(f"❌ Order placement failed: {result}")
+            logger.error(f"âŒ Order placement failed: {result}")
             return None
             
         except Exception as e:
-            logger.error(f"❌ Error placing order: {e}")
+            logger.error(f"âŒ Error placing order: {e}")
             return None
     
     async def verify_order_status(self, order_id):
@@ -311,13 +311,13 @@ class RealTrader:
             
             if result and 'Success' in result and result['Success']:
                 status = result['Success'][0]['status']
-                logger.info(f"📋 Order {order_id}: {status}")
+                logger.info(f"ðŸ“‹ Order {order_id}: {status}")
                 return status
             
             return "Unknown"
             
         except Exception as e:
-            logger.error(f"❌ Error verifying order: {e}")
+            logger.error(f"âŒ Error verifying order: {e}")
             return "Error"
     
     def save_trade_to_db(self, strike, direction, entry_premium, breakout_level, confluence_score, order_id, order_status):
@@ -352,17 +352,17 @@ class RealTrader:
             trade_id = cursor.lastrowid
             conn.close()
             
-            logger.info(f"💾 Trade #{trade_id} saved to database")
+            logger.info(f"ðŸ’¾ Trade #{trade_id} saved to database")
             return trade_id
             
         except Exception as e:
-            logger.error(f"❌ Error saving trade: {e}")
+            logger.error(f"âŒ Error saving trade: {e}")
             return None
     
     async def monitor_open_trades(self):
         """
         Monitor open trades for:
-        1. ₹10 target (immediate exit)
+        1. â‚¹10 target (immediate exit)
         2. Level-based stop-loss (2 consecutive 5-min candles)
         """
         try:
@@ -381,7 +381,7 @@ class RealTrader:
             if not open_trades:
                 return
             
-            logger.info(f"📊 Monitoring {len(open_trades)} open trade(s)")
+            logger.info(f"ðŸ“Š Monitoring {len(open_trades)} open trade(s)")
             
             for trade in open_trades:
                 trade_id, strike, direction, entry_premium, quantity, breakout_level, order_id, sl_candle_count, last_sl_check = trade
@@ -390,18 +390,18 @@ class RealTrader:
                 current_premium = await self.get_option_premium(strike, direction)
                 
                 if current_premium is None:
-                    logger.warning(f"⚠️ Trade #{trade_id}: Could not fetch current price")
+                    logger.warning(f"âš ï¸ Trade #{trade_id}: Could not fetch current price")
                     continue
                 
                 # Calculate P&L
                 pnl_per_lot = current_premium - entry_premium
                 total_pnl = pnl_per_lot * quantity
                 
-                logger.info(f"📊 Trade #{trade_id}: {strike} {direction} | Entry: ₹{entry_premium:.2f} | Current: ₹{current_premium:.2f} | P&L: ₹{pnl_per_lot:.2f}/lot (Total: ₹{total_pnl:.2f})")
+                logger.info(f"ðŸ“Š Trade #{trade_id}: {strike} {direction} | Entry: â‚¹{entry_premium:.2f} | Current: â‚¹{current_premium:.2f} | P&L: â‚¹{pnl_per_lot:.2f}/lot (Total: â‚¹{total_pnl:.2f})")
                 
-                # Check TARGET (₹10 profit)
+                # Check TARGET (â‚¹10 profit)
                 if pnl_per_lot >= self.target_per_lot:
-                    logger.info(f"🎯 TARGET HIT: Trade #{trade_id} - Profit ₹{pnl_per_lot:.2f}/lot")
+                    logger.info(f"ðŸŽ¯ TARGET HIT: Trade #{trade_id} - Profit â‚¹{pnl_per_lot:.2f}/lot")
                     await self.exit_trade(trade_id, strike, direction, current_premium, "TARGET", order_id)
                     continue
                 
@@ -411,7 +411,7 @@ class RealTrader:
             conn.close()
             
         except Exception as e:
-            logger.error(f"❌ Error monitoring trades: {e}")
+            logger.error(f"âŒ Error monitoring trades: {e}")
     
     async def check_level_based_stoploss(self, trade_id, strike, direction, entry_premium, current_premium, breakout_level, sl_candle_count, last_sl_check, order_id):
         """
@@ -450,16 +450,16 @@ class RealTrader:
                 condition = f"close > {breakout_level}"
             
             if violation:
-                logger.warning(f"🛑 STOP-LOSS: Trade #{trade_id} - 2 consecutive candles violated {condition}")
-                logger.warning(f"   Candle 1: {candle1_time} @ ₹{candle1_close:.2f}")
-                logger.warning(f"   Candle 2: {candle2_time} @ ₹{candle2_close:.2f}")
+                logger.warning(f"ðŸ›‘ STOP-LOSS: Trade #{trade_id} - 2 consecutive candles violated {condition}")
+                logger.warning(f"   Candle 1: {candle1_time} @ â‚¹{candle1_close:.2f}")
+                logger.warning(f"   Candle 2: {candle2_time} @ â‚¹{candle2_close:.2f}")
                 
                 await self.exit_trade(trade_id, strike, direction, current_premium, "STOP_LOSS_LEVEL", order_id)
             else:
                 logger.debug(f"Trade #{trade_id}: SL check OK - {candle1_close:.2f}, {candle2_close:.2f} vs level {breakout_level:.2f}")
             
         except Exception as e:
-            logger.error(f"❌ Error checking stop-loss: {e}")
+            logger.error(f"âŒ Error checking stop-loss: {e}")
     
     async def exit_trade(self, trade_id, strike, direction, exit_premium, exit_reason, entry_order_id):
         """
@@ -469,7 +469,7 @@ class RealTrader:
             option_type = "call" if direction == "CALL" else "put"
             expiry_date = self.get_next_expiry()
             
-            logger.info(f"🚪 EXITING Trade #{trade_id}: {strike} {direction} @ ₹{exit_premium:.2f} ({exit_reason})")
+            logger.info(f"ðŸšª EXITING Trade #{trade_id}: {strike} {direction} @ â‚¹{exit_premium:.2f} ({exit_reason})")
             
             # Square off via Breeze
             result = await self.api_manager.safe_api_call(
@@ -495,7 +495,7 @@ class RealTrader:
             
             if result and 'Success' in result:
                 exit_order_id = result['Success']['order_id']
-                logger.info(f"✅ EXIT ORDER: {exit_order_id}")
+                logger.info(f"âœ… EXIT ORDER: {exit_order_id}")
                 
                 # Verify exit
                 await asyncio.sleep(2)
@@ -524,12 +524,12 @@ class RealTrader:
                 ''', (exit_premium, datetime.now().isoformat(), pnl, exit_reason, exit_order_id, exit_order_status, trade_id))
                 
                 conn.commit()
-                logger.info(f"✅ Trade #{trade_id} CLOSED: P&L ₹{pnl:.2f} ({exit_reason})")
+                logger.info(f"âœ… Trade #{trade_id} CLOSED: P&L â‚¹{pnl:.2f} ({exit_reason})")
             
             conn.close()
             
         except Exception as e:
-            logger.error(f"❌ Error exiting trade: {e}")
+            logger.error(f"âŒ Error exiting trade: {e}")
     
     def check_15min_breakout(self):
         """Check for breakout signals from Super Pranni Monitor"""
@@ -537,14 +537,14 @@ class RealTrader:
             signal = self.monitor.check_all_breakouts()
             
             if signal:
-                logger.info(f"🔥 SIGNAL: {signal.get('timeframe', 'N/A')} @ ₹{signal.get('level', 0):.2f} ({signal.get('probability', 0)}%)")
+                logger.info(f"ðŸ”¥ SIGNAL: {signal.get('timeframe', 'N/A')} @ â‚¹{signal.get('level', 0):.2f} ({signal.get('probability', 0)}%)")
                 logger.info(f"   Direction: {signal.get('direction', 'N/A')} | Type: {signal.get('type', 'N/A')}")
                 return signal
             
             return None
             
         except Exception as e:
-            logger.error(f"❌ Error checking breakout: {e}")
+            logger.error(f"âŒ Error checking breakout: {e}")
             return None
     
     def is_market_hours(self):
@@ -557,11 +557,11 @@ class RealTrader:
     async def run_trading_session(self):
         """Main trading loop"""
         try:
-            logger.info("🚀 Starting trading session...")
+            logger.info("ðŸš€ Starting trading session...")
             
             # Connect to Breeze
             if not self.connect_to_breeze():
-                logger.error("❌ Failed to connect to Breeze")
+                logger.error("âŒ Failed to connect to Breeze")
                 return
             
             iteration = 0
@@ -569,11 +569,11 @@ class RealTrader:
             while True:
                 iteration += 1
                 logger.info(f"\n{'='*60}")
-                logger.info(f"🔄 Iteration #{iteration} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                logger.info(f"ðŸ”„ Iteration #{iteration} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
                 
                 # Check market hours
                 if not self.is_market_hours():
-                    logger.info("⏰ Market closed - waiting...")
+                    logger.info("â° Market closed - waiting...")
                     await asyncio.sleep(60)
                     continue
                 
@@ -602,17 +602,17 @@ class RealTrader:
                 
                 # API usage stats
                 stats = self.api_manager.get_usage_stats()
-                logger.info(f"📊 API Usage: {stats['current_minute_usage']}/{self.api_manager.max_calls_per_minute} ({stats['usage_percentage']:.1f}%)")
+                logger.info(f"ðŸ“Š API Usage: {stats['current_minute_usage']}/{self.api_manager.max_calls_per_minute} ({stats['usage_percentage']:.1f}%)")
                 
                 # Wait before next iteration
                 await asyncio.sleep(15)  # Check every 15 seconds
                 
         except KeyboardInterrupt:
-            logger.info("\n⏹️ Trading session stopped by user")
+            logger.info("\nâ¹ï¸ Trading session stopped by user")
         except Exception as e:
-            logger.error(f"❌ Fatal error in trading session: {e}", exc_info=True)
+            logger.error(f"âŒ Fatal error in trading session: {e}", exc_info=True)
         finally:
-            logger.info("👋 Trading session ended")
+            logger.info("ðŸ‘‹ Trading session ended")
 
 
 if __name__ == "__main__":
